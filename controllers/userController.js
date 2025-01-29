@@ -10,55 +10,95 @@ import { RESTAURANT } from "../models/restaurantModel.js";
 import { generateToken } from "../utils/token.js";
 import { createCookie } from "../utils/cookie.js";
 import { COUPON } from "../models/couponModel.js";
+import { OTP } from "../models/otpModel.js";
+import { sendOTP } from "../utils/otpMail.js";
 
 
 
-export const userSignup= async (req,res,next)=>{
-    try{
+export const userSignup = async (req, res, next) => {
+  try {
+      const { name, email, phone, password, role } = req.body;  // Include `role`
+      
+      if (!name || !email || !password || !phone || !role) {  // Validate `role`
+          return res.status(400).json({ message: "All fields are required, including role." });
+      }
+
+      const isUserExist = await USER.findOne({ $or: [{ email }, { phone }] });
+      if (isUserExist) {
+          return res.status(400).json({ message: "User already exists" });
+      }
+
+      // Get uploaded profile pic URL
+      const profilePicUrl = req.cloudinaryResult.secure_url;
+      if (!profilePicUrl) {
+          return res.status(400).json({ message: "File upload failed." });
+      }
+
+      // Generate OTP and store it in OTP collection (Include `role`)
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+      const otpRecord = new OTP({ email, otp, role });  // Role is now included
+      await otpRecord.save();
+
+      // Send OTP to email
+      await sendOTP(email, otp,role);
+
+      return res.status(200).json({ 
+          message: "OTP sent for verification", 
+          email
+      });
+
+  } catch (error) {
+      return res.status(500).json({ message: "Internal server error", error: error.message });
+  }
+};
+
+
+// export const userSignup= async (req,res,next)=>{
+//     try{
         
-        const {name ,email,phone,password,profilePic,role}=req.body
-        console.log(req.body);
+//         const {name ,email,phone,password,profilePic,role}=req.body
+//         console.log(req.body);
         
         
-        if (!name || !email || !password || !phone) {
-            return res.status(400).json({ message: "all fields are required" });
-        }
-        const isUserExist = await USER.findOne({
-            $or: [{ email }, { phone }]
-          });
+//         if (!name || !email || !password || !phone) {
+//             return res.status(400).json({ message: "all fields are required" });
+//         }
+//         const isUserExist = await USER.findOne({
+//             $or: [{ email }, { phone }]
+//           });
           
-          if (isUserExist) {
-            return res.status(400).json({ message: "User already exists" });
-          }
+//           if (isUserExist) {
+//             return res.status(400).json({ message: "User already exists" });
+//           }
           
 
-          const profilePicUrl = req.cloudinaryResult.secure_url;
-          if (!profilePicUrl) {
-            return res.status(400).json({ message: "File upload failed." });
-          }
+//           const profilePicUrl = req.cloudinaryResult.secure_url;
+//           if (!profilePicUrl) {
+//             return res.status(400).json({ message: "File upload failed." });
+//           }
 
-        const hashedPassword = bcrypt.hashSync(password, 10);
+//         const hashedPassword = bcrypt.hashSync(password, 10);
         
 
-        const userData = new USER({ name, email, password: hashedPassword, phone, profilePic :profilePicUrl  ,role });
-        await userData.save();
+//         const userData = new USER({ name, email, password: hashedPassword, phone, profilePic :profilePicUrl  ,role });
+//         await userData.save();
 
        
-        sendOtp(userData.email,userData.role)
+//         sendOtp(userData.email,userData.role)
 
         
         
         
-        return res.json({ data: userData, message: "send for verification otp" });
+//         return res.json({ data: userData, message: "send for verification otp" });
        
      
  
-    }
-    catch (error) {
-        return res.status(error.statusCode || 500).json({ message: error.message || "Internal server error" });
-    }
+//     }
+//     catch (error) {
+//         return res.status(error.statusCode || 500).json({ message: error.message || "Internal server error" });
+//     }
  
-  }
+// }
 
 export const userLogin= async(req,res,next)=>{
     try {

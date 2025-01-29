@@ -31,64 +31,74 @@ export const sendOtp = async (email,role) => {
    ;
   }
 };
+
 export const verifyOtp = async (req, res) => {
-  const { email, otp, role } = req.body; 
-  console.log(req.body);
-  
-  // Get email, OTP, and role from the front end
+    const { email, otp, role, name, phone, password, profilePicUrl } = req.body;
 
-  if (!otp || !email || !role) {
-    return res.status(400).json({ message: "Email, OTP, and role are required!" });
-  }
-
-  try {
-    // Map role to the corresponding user model
-    const userModelMap = {
-      user: USER,
-      restaurant: RESTAURANT,
-      admin: ADMIN,
-      delivery: DELIVERY,
-    };
-
-    if (!userModelMap[role]) {
-      return res.status(400).json({ message: "Invalid role!" });
+    if (!otp || !email || !role || !name || !phone || !password || !profilePicUrl) {
+        return res.status(400).json({ message: "All fields are required!" });
     }
 
-    // Check if the user exists in the respective collection based on role
-    const userData = await userModelMap[role].findOne({ email });
-    if (!userData) {
-      return res.status(404).json({ message: `No ${role} found with this email` });
+    try {
+        const otpRecord = await OTP.findOne({ email, otp, role });
+        if (!otpRecord) {
+            return res.status(400).json({ message: "Invalid or expired OTP!" });
+        }
+
+        await OTP.deleteOne({ _id: otpRecord._id });
+
+        const hashedPassword = bcrypt.hashSync(password, 10);
+
+        const userModelMap = {
+            user: USER,
+            admin: ADMIN,
+            restaurant: RESTAURANT,
+            delivery: DELIVERY
+        };
+
+        if (!userModelMap[role]) {
+            return res.status(400).json({ message: "Invalid role!" });
+        }
+
+        const UserModel = userModelMap[role];
+
+        const isUserExist = await UserModel.findOne({ email });
+        if (isUserExist) {
+            return res.status(400).json({ message: `${role} already exists!` });
+        }
+
+        const newUser = new UserModel({
+            name,
+            email,
+            password: hashedPassword,
+            phone,
+            profilePic: profilePicUrl,
+            role
+        });
+
+        await newUser.save();
+
+        const token = generateToken(newUser._id, newUser.role);
+        createCookie(res, token);
+
+        return res.status(200).json({
+            message: `${role} created successfully`,
+            data: { 
+              _id: newUser._id, 
+              name: newUser.name, 
+              email: newUser.email,
+              phone: newUser.phone ,
+              profilePic:newUser.profilePic, 
+              role 
+            }
+        });
+
+
+    } catch (error) {
+        console.error("Error verifying OTP:", error);
+        return res.status(500).json({ message: "Failed to verify OTP", error: error.message });
     }
-
-    // Verify OTP record
-    const otpRecord = await OTP.findOne({ email, role, otp });
-    if (!otpRecord) {
-      // Delete user if OTP verification fails
-      await userModelMap[role].deleteOne({ email });
-      return res.status(400).json({ message: "Invalid or expired OTP!" });
-    }
-
-    // Delete OTP record after verification
-    await OTP.deleteOne({ _id: otpRecord._id });
-
-    // Generate a token for the user
-    const token = generateToken(userData._id, userData.role);
-    createCookie(res, token);
-
-    // Remove sensitive information like password before sending the response
-    const { password, ...userDetails } = userData._doc;
-
-    return res.status(200).json({
-      message: `OTP verified successfully and ${role} created`,
-      data: userDetails,
-    });
-
-  } catch (error) {
-    console.error("Error verifying OTP and creating user:", error);
-    res.status(500).json({ message: "Failed to verify OTP", error: error.message });
-  }
 };
-
 
 
 export const otpverifypassword=async(req,res)=>{
@@ -129,12 +139,11 @@ export const passwordreset = async (req, res) => {
     console.log("Password reset endpoint hit");
 
     const { password, passwordtwo } = req.body;
-    const { id, role } = req.user; // Assuming req.user is populated by middleware
+    const { id, role } = req.user; 
 
     console.log("Request body:", req.body);
     console.log("Authenticated user:", req.user);
 
-    // Validate input
     if (!password || !passwordtwo) {
       return res.status(400).json({
         message: "Both passwords are required",
@@ -149,7 +158,6 @@ export const passwordreset = async (req, res) => {
       });
     }
 
-    // Define a mapping of roles to their respective models
     const roleModelMap = {
       user: USER,
       admin: ADMIN,
@@ -157,7 +165,6 @@ export const passwordreset = async (req, res) => {
       delivery: DELIVERY,
     };
 
-    // Get the model based on the user's role
     const Model = roleModelMap[role];
 
     if (!Model) {
@@ -167,7 +174,6 @@ export const passwordreset = async (req, res) => {
       });
     }
 
-    // Find the user in the database
     const userToEdit = await Model.findById(id);
 
     if (!userToEdit) {
@@ -177,14 +183,11 @@ export const passwordreset = async (req, res) => {
       });
     }
 
-    // Hash the new password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Update the user's password
     userToEdit.password = hashedPassword;
     await userToEdit.save();
 
-    // Respond with success
     return res.status(200).json({
       message: `${role} password successfully changed`,
       success: true,

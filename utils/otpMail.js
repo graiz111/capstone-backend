@@ -13,7 +13,7 @@ const transporter = nodemailer.createTransport({
 })
 
 
-export const sendOTP = async (email, role ,otp) => {
+export const sendOTP = async (email,otp,role) => {
   
   const message = `Your OTP for ${role} verification is: ${otp}`;
 
