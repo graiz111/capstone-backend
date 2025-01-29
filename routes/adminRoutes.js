@@ -1,6 +1,6 @@
 import express from 'express';
 const router = express.Router()
-import { admineditProfilePic, adminforgotpassword, adminLogin, adminSignup, deleteAccount, editProfile, logOut } from '../controllers/adminController.js';
+import { admineditProfilePic, adminforgotpassword, adminLogin, adminSignup, coupons, deleteAccount, deletecoupon, editProfile, logOut } from '../controllers/adminController.js';
 import {adminAuth} from '../middlewares/adminAuth.js'
 import { processUpload } from '../utils/cloudinary.js';
 import { otpverifypassword, passwordreset, verifyOtp } from '../controllers/sendOtpController.js';
@@ -18,6 +18,9 @@ router.put('/verifyreset',adminAuth,otpverifypassword)
 router.put('/passwordreset',adminAuth,passwordreset)
 router.get('/userfetch',getAllUsers);
 router.get('/getallres',getAllRestaurants)
+router.post('/addcoupon',adminAuth,coupons)
+// router.put('/checkcoupons',)
+router.delete('/coupondelete',deletecoupon)
 router.post('/logout',adminAuth,logOut)
 router.delete('/adminDelete',adminAuth,deleteAccount)
 

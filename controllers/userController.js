@@ -9,6 +9,7 @@ import { sendOtp, verifyOtp } from "./sendOtpController.js";
 import { RESTAURANT } from "../models/restaurantModel.js";
 import { generateToken } from "../utils/token.js";
 import { createCookie } from "../utils/cookie.js";
+import { COUPON } from "../models/couponModel.js";
 
 
 
@@ -76,7 +77,7 @@ export const userLogin= async(req,res,next)=>{
         const passwordMatch = bcrypt.compareSync(password, userExist.password);
 
         if (!passwordMatch) {
-            return res.status(401).json({ message: "user not authenticated" });
+            return res.status(401).json({ message: "password incorrect" });
         }
 
         const token = generateToken(userExist._id,userExist.role);
@@ -362,7 +363,63 @@ export const orderCreate = async (req, res) => {
     res.status(500).json({ message: "Error creating order", error });
   }
 };
+export const validateCoupon = async (req, res) => {
+  try {
+    const { code } = req.body;
+    const coupon = await COUPON.findOne({ code, isActive: true });
 
+    if (!coupon) {
+      return res.status(404).json({ message: "Coupon not found or inactive" });
+    }
+
+    if (new Date() > new Date(coupon.expiresAt)) {
+      return res.status(400).json({ message: "Coupon has expired" });
+    }
+
+    res.status(200).json({ message: "Coupon is valid", discount: coupon.discount });
+  } catch (error) {
+    res.status(500).json({ message: "Error validating coupon", error });
+  }
+};
+
+
+
+export const applyCoupon = async (req, res) => {
+  try {
+    const { orderId, couponCode } = req.body;
+    console.log(req.body);
+    
+
+    // 🛑 Ensure order exists before proceeding
+    const order = await ORDER.findById(orderId);
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    // 🛑 Ensure required fields exist before applying coupon
+    if (!order.user_id || !order.restaurant_id) {
+      return res.status(400).json({ message: "Invalid order: Missing user_id or restaurant_id" });
+    }
+
+    const coupon = await COUPON.findOne({ code: couponCode, isActive: true });
+    if (!coupon) return res.status(400).json({ message: "Invalid or expired coupon" });
+
+    if (new Date() > new Date(coupon.expiresAt)) {
+      return res.status(400).json({ message: "Coupon has expired" });
+    }
+
+    const discountAmount = (order.totalPrice * coupon.discount) / 100;
+    const newTotal = Math.max(order.totalPrice - discountAmount, 0);
+
+    order.totalPrice = newTotal;
+    order.coupon = coupon._id;
+    await order.save();
+
+    res.status(200).json({ message: "Coupon applied successfully", newTotal });
+  } catch (error) {
+    res.status(500).json({ message: "Error applying coupon", error });
+  }
+};
 
 export const coddelivery=async(req,res)=>{
   try {

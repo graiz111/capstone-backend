@@ -3,6 +3,7 @@ import { createCookie } from "../utils/cookie.js";
 import { generateToken } from "../utils/token.js";
 import bcrypt from 'bcrypt'
 import { sendOtp } from "./sendOtpController.js";
+import { COUPON } from "../models/couponModel.js";
 
 export const adminSignup= async (req,res,next)=>{
     try{
@@ -206,5 +207,54 @@ export const deleteAccount=async (req,res)=>{
   catch{
     res.status(500).json({ message: "Internal server error." });
 
+  }
+}
+
+//coupons
+export const coupons=async(req,res)=>{
+  try {
+    const { code, discount, expiresAt } = req.body;
+    if (!req.user || req.user.role !== "admin") {
+      return res.status(403).json({ message: "Access denied" });
+    }
+
+    const existingCoupon = await COUPON.findOne({ code });
+    if (existingCoupon) {
+      return res.status(400).json({ message: "Coupon code already exists" });
+    }
+
+    const coupon = new COUPON({
+      code,
+      discount,
+      expiresAt,
+      createdBy: req.user.id,
+    });
+
+    await coupon.save();
+    res.status(201).json({ message: "Coupon created successfully", coupon });
+  } catch (error) {
+    res.status(500).json({ message: "Error creating coupon", error });
+  }
+}
+export const deletecoupon=async(req,res)=>{
+  try {
+    console.log("delete coupon hit ");
+    
+    const {code}=req.body
+    if(!code){
+      res.status(400).json({message:"coupon not found"})
+    }
+
+    const coupon = await COUPON.findOne({code});
+    if (!coupon) {
+      return res.status(404).json({ message: "Coupon not found in database" });
+    }
+    console.log(coupon);
+    
+
+    await coupon.deleteOne();
+    res.status(200).json({ message: "Coupon deleted successfully" });
+  } catch (error) {
+    
   }
 }

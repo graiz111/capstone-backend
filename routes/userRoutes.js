@@ -1,5 +1,5 @@
 import express from 'express';
-import { userLogin,userSignup, deleteAccount, editProfilePic, editProfile, logOut, getAllUsers, addItemToCart, addRating, userforgotpassword, orderCreate} from '../controllers/userController.js';
+import { userLogin,userSignup, deleteAccount, editProfilePic, editProfile, logOut, getAllUsers, addItemToCart, addRating, userforgotpassword, orderCreate, validateCoupon, applyCoupon} from '../controllers/userController.js';
 const router = express.Router();
 import { processUpload} from '../utils/cloudinary.js';
 import { userAuth } from '../middlewares/userAuth.js';
@@ -13,7 +13,8 @@ router.put('/additemtocart', addItemToCart)
 router.post('/order',orderCreate)
 router.put('/addrating',addRating)
 router.delete('/delete',userAuth,deleteAccount);
-
+router.post ('/validatecoupons',validateCoupon)
+router.post('/applycoupon',applyCoupon);
 router.put('/editProfile',userAuth, editProfile);
 router.put('/forgotpassword', userforgotpassword)
 router.put('/otpverifyreset',otpverifypassword)
