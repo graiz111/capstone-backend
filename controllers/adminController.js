@@ -4,78 +4,153 @@ import { generateToken } from "../utils/token.js";
 import bcrypt from 'bcrypt'
 import { sendOtp } from "./sendOtpController.js";
 import { COUPON } from "../models/couponModel.js";
+import { OTP } from "../models/otpModel.js";
+import { sendOTP } from "../utils/otpMail.js";
+import { USER } from "../models/userModel.js";
+import { DELIVERY } from "../models/deliverBoyModels.js";
 
 export const adminSignup= async (req,res,next)=>{
-    try{
-        
-        const {name ,email,phone,password,profilePic,role}=req.body
-        
-        if (!name || !email || !password || !phone) {
-            return res.status(400).json({ message: "all fields are required" });
-        }
-        const isAdminExist = await ADMIN.findOne({
-            $or: [{ email }, { phone }]
-          });
-          
-          if (isAdminExist) {
-            return res.status(400).json({ message: "admin already exists" });
-          }
-        const hashedPassword = bcrypt.hashSync(password, 10);
-        const profilePicUrl = req.cloudinaryResult.secure_url;
-          if (!profilePicUrl) {
-            return res.status(400).json({ message: "File upload failed." });
-          }
-        
+    try {
+      const { name, email, phone, password, role } = req.body;  // Include `role`
+      
+      if (!name || !email || !password || !phone || !role) {  // Validate `role`
+          return res.status(400).json({ message: "All fields are required, including role." });
+      }
 
-        const adminData = new ADMIN({ name, email, password: hashedPassword, phone, profilePic:profilePicUrl,role });
-        await adminData.save();
-        sendOtp(email,role)
-        
-        
-        
-       
-     
- 
-    }
-    catch (error) {
-        return res.status(error.statusCode || 500).json({ message: error.message || "Internal server error" });
-    }
+      const isUserExist = await ADMIN.findOne({ $or: [{ email }, { phone }] });
+      if (isUserExist) {
+          return res.status(400).json({ message: "admin already exists" });
+      }
+
+      // Get uploaded profile pic URL
+      const profilePicUrl = req.cloudinaryResult.secure_url;
+      if (!profilePicUrl) {
+        res.status(400).json({ message: "File upload failed." });
+      }
+
+      // Generate OTP and store it in OTP collection (Include `role`)
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+      const otpRecord = new OTP({ email, otp, role });  // Role is now included
+      await otpRecord.save();
+
+      // Send OTP to email
+      await sendOTP(email,otp,role);
+
+      return res.status(200).json({ 
+          message: "OTP sent for verification", 
+          email,
+          profilePicUrl
+      });
+
+  } catch (error) {
+      return res.status(500).json({ message: "Internal server error", error: error.message });
+  }
  
 }
 export const adminLogin= async(req,res,next)=>{
     try {
-        const { email, password } = req.body;
-        
-
-        if (!email || !password) {
-            return res.status(400).json({ message: "all fields are required" });
+            const { email, password } = req.body;
+    
+            if (!email || !password) {
+                return res.status(400).json({ message: "all fields are needed" });
+            }
+    
+            const userExist = await ADMIN.findOne({ email });
+    
+            if (!userExist) {
+                return res.status(404).json({ message: "Admin not exist try signup" });
+            }
+    
+            const passwordMatch = bcrypt.compareSync(password, userExist.password);
+    
+            if (!passwordMatch) {
+                return res.status(401).json({ message: "password incorrect" });
+            }
+            // res.json({ message: "wait a moment" });
+            const otp = Math.floor(100000 + Math.random() * 900000).toString();
+            const otpRecord = new OTP({ email:userExist.email, otp, role:userExist.role });  
+            await otpRecord.save();
+      
+            // Send OTP to email
+            await sendOTP(
+              userExist.email,
+              otp,
+              userExist.role
+          );
+      
+            return res.status(200).json({ 
+                message: "OTP sent for verification", 
+                _id:userExist._id,
+                email
+                
+            });
+    
+        } catch (error) {
+    
+            return res.status(error.statusCode || 500).json({ message: error.message || "Internal server error" });
         }
-
-        const adminExist = await ADMIN.findOne({ email });
-
-        if (!adminExist) {
-            return res.status(404).json({ message: "admin does not exist try signup" });
-        }
-
-        const passwordMatch = bcrypt.compareSync(password, adminExist.password);
-
-        if (!passwordMatch) {
-            return res.status(401).json({ message: "admin not authenticated" });
-        }
-
-        const token = generateToken(adminExist._id);
-        createCookie(res,token)
- 
-
-        delete adminExist._doc.password
-
-        return res.json({ data: adminExist, message: "admin login successfully" });
-    } catch (error) {
-
-        return res.status(error.statusCode || 500).json({ message: error.message || "Internal server error" });
-    }
 
 }
+export const getadmin =async (req, res) => {
+  console.log('enteresd admin get');
+  
+  const {_id}=req.query
+  console.log(req.query);
+  
+  try {
+    const user = await ADMIN.findById(_id).select("-password"); // Exclude password
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
+export const getAllusers =async (req, res) => {
+  console.log('enteresd admin all users get');
+  
+  
+  
+  try {
+    const user = await USER.find().select("-password"); // Exclude password
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
+export const edituser= async (req, res) => {
+  const { _id, name, email, phone } = req.body;
+  try {
+    const updatedUser = await USER.findByIdAndUpdate(
+      _id,
+      { name, email, phone },
+      { new: true }
+    );
+    res.status(200).json(updatedUser);
+  } catch (error) {
+    res.status(500).json({ message: "Error updating user" });
+  }
+};
+export const getAlldelivery =async (req, res) => {
+  console.log('enteresd admin all users get');
+  
+  
+  
+  try {
+    const user = await DELIVERY.find().select("-password"); // Exclude password
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 export const editProfile = async (req, res, next) => {
     try {
       const { name, email, phone, password, profilePic, _id } = req.body;
@@ -146,7 +221,28 @@ export const admineditProfilePic = async (req, res) => {
     return res.status(500).json({ message: "Internal server error.", success: false });
   }
 };
+export const  toggleActivedelivery=async (req, res) => {
+  const { id } = req.params; // Get the delivery ID from the URL parameter
+  const { isActive } = req.body; // Get the new status from the request body
+  
+  try {
+    // Update the delivery status in the database (assuming you're using MongoDB here as an example)
+    const updatedDelivery = await DELIVERY.findByIdAndUpdate(
+      id,
+      { isActive: isActive === 'true' }, // Convert 'true'/'false' to boolean true/false
+      { new: true } // Return the updated document
+    );
 
+    if (!updatedDelivery) {
+      return res.status(404).json({ message: 'Delivery not found' });
+    }
+
+    res.status(200).json(updatedDelivery); // Send the updated delivery back in the response
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error updating status' });
+  }
+};
 export const adminforgotpassword=async(req,res)=>{
 
   try{

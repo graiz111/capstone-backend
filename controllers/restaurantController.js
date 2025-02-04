@@ -7,77 +7,92 @@ import { sendOtp } from './sendOtpController.js';
 import { USER } from '../models/userModel.js';
 import { CART } from '../models/cartModel.js';
 import {ORDER} from '../models/orderModel.js'
+import { OTP } from '../models/otpModel.js';
+import { sendOTP } from '../utils/otpMail.js';
 
 
 
 export const restaurantSignup= async (req,res,next)=>{
-    try{
-        
-        const {name ,email,phone,password,profilePic, role}=req.body
-        console.log('req.body',req.body);
-        
-        
-        if (!name || !email || !password || !phone) {
-            return res.status(400).json({ message: "all fields are required" });
-        }
-        const isRestaurantExist = await RESTAURANT.findOne({
-            $or: [{ email }, { phone }]
-          });
+    try {
+          const { name, email, phone, password, role } = req.body;  // Include `role`
           
-          if (isRestaurantExist) {
-            return res.status(400).json({ message: "restaurant already exists" });
+          if (!name || !email || !password || !phone || !role) {  // Validate `role`
+              return res.status(400).json({ message: "All fields are required, including role." });
           }
-        const hashedPassword = bcrypt.hashSync(password, 10);
-        const profilePicUrl = req.cloudinaryResult.secure_url;
-        if (!profilePicUrl) {
-          return res.status(400).json({ message: "File upload failed." });
-        }
-        
-
-        const restaurantData = new RESTAURANT({ name, email, password: hashedPassword, phone, profilePic:profilePicUrl,role });
-        await restaurantData.save();
-        sendOtp(restaurantData.email,restaurantData.role)
-       
-     
+    
+          const isUserExist = await RESTAURANT.findOne({ $or: [{ email }, { phone }] });
+          if (isUserExist) {
+              return res.status(400).json({ message: "Restaurant already exists" });
+          }
+    
+          // Get uploaded profile pic URL
+          const profilePicUrl = req.cloudinaryResult.secure_url;
+          if (!profilePicUrl) {
+            res.status(400).json({ message: "File upload failed." });
+          }
+    
+          // Generate OTP and store it in OTP collection (Include `role`)
+          const otp = Math.floor(100000 + Math.random() * 900000).toString();
+          const otpRecord = new OTP({ email, otp, role });  // Role is now included
+          await otpRecord.save();
+    
+          // Send OTP to email
+          await sendOTP(email,otp,role);
+    
+          return res.status(200).json({ 
+              message: "OTP sent for verification", 
+              email,
+              profilePicUrl
+          });
+    
+      } catch (error) {
+          return res.status(500).json({ message: "Internal server error", error: error.message });
+      }
  
-    }
-    catch (error) {
-        return res.status(error.statusCode || 500).json({ message: error.message || "Internal server error" });
-    }
- 
-  }
+}
 
 export const restaurantLogin= async(req,res,next)=>{
     try {
-        const { name,email, password } = req.body;
-
-        if (!name || !password) {
-            return res.status(400).json({ message: "all fields are required" });
+            const { email, password } = req.body;
+    
+            if (!email || !password) {
+                return res.status(400).json({ message: "all fields are needed" });
+            }
+    
+            const userExist = await RESTAURANT.findOne({ email });
+    
+            if (!userExist) {
+                return res.status(404).json({ message: "Restaurant not exist try signup" });
+            }
+    
+            const passwordMatch = bcrypt.compareSync(password, userExist.password);
+    
+            if (!passwordMatch) {
+                return res.status(401).json({ message: "password incorrect" });
+            }
+            // res.json({ message: "wait a moment" });
+            const otp = Math.floor(100000 + Math.random() * 900000).toString();
+            const otpRecord = new OTP({ email:userExist.email, otp, role:userExist.role });  // Role is now included
+            await otpRecord.save();
+      
+            // Send OTP to email
+            await sendOTP(
+              userExist.email,
+              otp,
+              userExist.role
+          );
+      
+            return res.status(200).json({ 
+                message: "OTP sent for verification", 
+                _id:userExist._id,
+                email
+                
+            });
+    
+        } catch (error) {
+    
+            return res.status(error.statusCode || 500).json({ message: error.message || "Internal server error" });
         }
-
-        const restaurantExist = await RESTAURANT.findOne({ email});
-
-        if (!restaurantExist) {
-            return res.status(404).json({ message: "restaurant does not exist try signup" });
-        }
-
-        const passwordMatch = bcrypt.compareSync(password, restaurantExist.password);
-
-        if (!passwordMatch) {
-            return res.status(401).json({ message: "restaurant not authenticated" });
-        }
-
-        const token = generateToken(restaurantExist._id);
-        createCookie(res,token)
-        
-
-        delete restaurantExist._doc.password
-
-        return res.json({ data: restaurantExist, message: "restaurant login successfully" });
-    } catch (error) {
-
-        return res.status(error.statusCode || 500).json({ message: error.message || "Internal server error" });
-    }
 
 }
 export const editProfile = async (req, res, next) => {
@@ -204,24 +219,23 @@ export const deleteAccount=async (req,res)=>{
   }
 }
 export const getAllRestaurants = async (req, res) => {
-  try {
-    console.log("Fetching all restaurants...");
-
-    const restaurants = await RESTAURANT.find().select('-password').lean();
-
-    if (!restaurants || restaurants.length === 0) {
-      return res.status(404).json({ message: "No restaurants found.", success: false });
+  
+    console.log('entered restaurant find one ');
+    
+    const {_id}=req.query
+    console.log(req.query);
+    
+    try {
+      const user = await RESTAURANT.findById(_id).select("-password"); 
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      res.json(user);
+    } catch (error) {
+      res.status(500).json({ message: "Server error" });
     }
-
-    res.status(200).json({
-      message: "Restaurants fetched successfully.",
-      success: true,
-      data: restaurants,
-    });
-  } catch (error) {
-    console.error("Error fetching restaurants:", error);
-    res.status(500).json({ message: "Internal server error.", success: false });
-  }
+  
+    
 };
 export const getAllOrdersForRestaurant = async (req, res) => {
   try {

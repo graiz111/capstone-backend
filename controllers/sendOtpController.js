@@ -34,6 +34,8 @@ export const sendOtp = async (email,role) => {
 
 export const verifyOtp = async (req, res) => {
     const { email, otp, role, name, phone, password, profilePicUrl } = req.body;
+    console.log("otpsignupverify server",req.body);
+    
 
     if (!otp || !email || !role || !name || !phone || !password || !profilePicUrl) {
         return res.status(400).json({ message: "All fields are required!" });
@@ -200,6 +202,60 @@ export const passwordreset = async (req, res) => {
     });
   }
 };
+
+export const verifyOtpLogin = async (req, res) => {
+  const { email,otp,role,_id} = req.body; 
+  console.log("rebody in verifyotplogin",req.body);
+
+  if (!otp || !email||!_id) {
+      return res.status(400).json({ message: "all fields are needed!" });
+  }
+
+  try {
+      const otpRecord = await OTP.findOne({ email, otp });
+      if (!otpRecord) {
+          return res.status(400).json({ message: "Invalid or expired OTP!" });
+      }
+
+      await OTP.deleteOne({ _id: otpRecord._id });
+      const userModelMap = {
+        user: USER,
+        admin: ADMIN,
+        restaurant: RESTAURANT,
+        delivery: DELIVERY
+    };
+
+    if (!userModelMap[role]) {
+        return res.status(400).json({ message: "Invalid role!" });
+    }
+
+    const UserModel = userModelMap[role];
+
+    const newUser= await UserModel.findById({_id});
+    // console.log(newUser);
+    
+    const token = generateToken(newUser._id, newUser.role);
+    createCookie(res, token);
+
+    return res.status(200).json({
+      message: `${role} Login successfull`,
+      data: { 
+        _id: newUser._id, 
+        name: newUser.name, 
+        email: newUser.email,
+        phone: newUser.phone ,
+        profilePic:newUser.profilePic, 
+        role 
+      }
+  });
+      
+      
+  } catch (error) {
+      console.error("Error verifying OTP:", error);
+      return res.status(500).json({ message: "Failed to verify OTP", error: error.message });
+  }
+};
+
 
 
 

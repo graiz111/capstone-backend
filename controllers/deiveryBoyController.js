@@ -4,82 +4,106 @@ import { createCookie } from "../utils/cookie.js";
 import { DELIVERY } from '../models/deliverBoyModels.js';
 import { RESTAURANT } from '../models/restaurantModel.js';
 import { sendOtp } from './sendOtpController.js';
+import { OTP } from '../models/otpModel.js';
+import { sendOTP } from '../utils/otpMail.js';
 
 
 export const deliveryPersonSignup= async (req,res,next)=>{
-    try{
-        
-        const {name ,email,phone,password,profilePic,role}=req.body
-        
-        if (!name || !email || !password || !phone) {
-            return res.status(400).json({ message: "all fields are required" });
-        }
-        const deliveryPersonExist = await DELIVERY.findOne({
-            $or: [{ email }, { phone }]
-          });
-          
-          if (deliveryPersonExist) {
-            return res.status(400).json({ message: "deliveryPerson already exists" });
-          }
-        const hashedPassword = bcrypt.hashSync(password, 10);
-        const profilePicUrl = req.cloudinaryResult.secure_url;
-        if (!profilePicUrl) {
-          return res.status(400).json({ message: "File upload failed." });
-        }
+    try {
+      const { name, email, phone, password, role } = req.body;  
       
-        
+      if (!name || !email || !password || !phone || !role) {  
+          return res.status(400).json({ message: "All fields are required, including role." });
+      }
 
-        const deliveryPersonData = new DELIVERY({ name, email, password: hashedPassword, phone, profilePic : profilePicUrl,role });
-        await deliveryPersonData.save();
-        delete deliveryPersonData._doc.password
+      const isUserExist = await DELIVERY.findOne({ $or: [{ email }, { phone }] });
+      if (isUserExist) {
+          return res.status(400).json({ message: "admin already exists" });
+      }
 
-        sendOtp(deliveryPersonData.email,deliveryPersonData.role)
-        
-        
-       
-       
-     
- 
-    }
-    catch (error) {
-        return res.status(error.statusCode || 500).json({ message: error.message || "Internal server error" });
-    }
+      const profilePicUrl = req.cloudinaryResult.secure_url;
+      if (!profilePicUrl) {
+        res.status(400).json({ message: "File upload failed." });
+      }
+
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+      const otpRecord = new OTP({ email, otp, role });  
+      await otpRecord.save();
+
+      await sendOTP(email,otp,role);
+
+      return res.status(200).json({ 
+          message: "OTP sent for verification", 
+          email,
+          profilePicUrl
+      });
+
+  } catch (error) {
+      return res.status(500).json({ message: "Internal server error", error: error.message });
+  }
  
   }
 
 export const deliveryPersonLogin= async(req,res,next)=>{
     try {
-        const { phone, password } = req.body;
-
-        if (!phone || !password) {
-            return res.status(400).json({ message: "all fields are required" });
-        }
-
-        const deliveryPersonExist = await DELIVERY.findOne({ phone });
-
-        if (!deliveryPersonExist) {
-            return res.status(404).json({ message: "deliveryPerson does not exist try signup" });
-        }
-
-        const passwordMatch = bcrypt.compareSync(password, deliveryPersonExist.password);
-
-        if (!passwordMatch) {
-            return res.status(401).json({ message: "deliveryPerson not authenticated" });
-        }
-
-        const token = generateToken(deliveryPersonExist._id);
-        createCookie(res,token)
-        
-
-        delete deliveryPersonExist._doc.password
-
-        return res.json({ data: deliveryPersonExist, message: "deliveryPerson login successfully" });
-    } catch (error) {
-
-        return res.status(error.statusCode || 500).json({ message: error.message || "Internal server error" });
-    }
+               const { email, password } = req.body;
+       
+               if (!email || !password) {
+                   return res.status(400).json({ message: "all fields are needed" });
+               }
+       
+               const userExist = await DELIVERY.findOne({ email });
+       
+               if (!userExist) {
+                   return res.status(404).json({ message: "Admin not exist try signup" });
+               }
+       
+               const passwordMatch = bcrypt.compareSync(password, userExist.password);
+       
+               if (!passwordMatch) {
+                   return res.status(401).json({ message: "password incorrect" });
+               }
+               // res.json({ message: "wait a moment" });
+               const otp = Math.floor(100000 + Math.random() * 900000).toString();
+               const otpRecord = new OTP({ email:userExist.email, otp, role:userExist.role });  
+               await otpRecord.save();
+         
+               // Send OTP to email
+               await sendOTP(
+                 userExist.email,
+                 otp,
+                 userExist.role
+             );
+         
+               return res.status(200).json({ 
+                   message: "OTP sent for verification", 
+                   _id:userExist._id,
+                   email
+                   
+               });
+       
+           } catch (error) {
+       
+               return res.status(error.statusCode || 500).json({ message: error.message || "Internal server error" });
+           }
 
 }
+export const getdeliverybooy =async (req, res) => {
+  console.log('enteresd delivery get');
+  
+  const {_id}=req.query
+  console.log(req.query);
+  
+  try {
+    const user = await DELIVERY.findById(_id).select("-password"); // Exclude password
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
 export const editProfile = async (req, res, next) => {
     try {
       const { name, email, phone, password, profilePic, _id } = req.body;
@@ -167,9 +191,11 @@ export const deliveryforgotpassword=async(req,res)=>{
   }
 
 }
-export const deleteAccount=async (req,res)=>{
+export const deleteDeliveryAccount=async (req,res)=>{
   try{
-    const {name,_id}=req.body
+    const {_id}=req.body
+    console.log(req.body);
+    
     const user = await DELIVERY.findByIdAndDelete(_id);
 
     res.status(200).json({ message: "User deleted successfully.", data: user });

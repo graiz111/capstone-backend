@@ -40,72 +40,24 @@ export const userSignup = async (req, res, next) => {
       await otpRecord.save();
 
       // Send OTP to email
-      await sendOTP(email, otp,role);
+      await sendOTP(email,otp,role);
 
       return res.status(200).json({ 
           message: "OTP sent for verification", 
-          email
+          email,
+          profilePicUrl
       });
 
   } catch (error) {
       return res.status(500).json({ message: "Internal server error", error: error.message });
   }
 };
-
-
-// export const userSignup= async (req,res,next)=>{
-//     try{
-        
-//         const {name ,email,phone,password,profilePic,role}=req.body
-//         console.log(req.body);
-        
-        
-//         if (!name || !email || !password || !phone) {
-//             return res.status(400).json({ message: "all fields are required" });
-//         }
-//         const isUserExist = await USER.findOne({
-//             $or: [{ email }, { phone }]
-//           });
-          
-//           if (isUserExist) {
-//             return res.status(400).json({ message: "User already exists" });
-//           }
-          
-
-//           const profilePicUrl = req.cloudinaryResult.secure_url;
-//           if (!profilePicUrl) {
-//             return res.status(400).json({ message: "File upload failed." });
-//           }
-
-//         const hashedPassword = bcrypt.hashSync(password, 10);
-        
-
-//         const userData = new USER({ name, email, password: hashedPassword, phone, profilePic :profilePicUrl  ,role });
-//         await userData.save();
-
-       
-//         sendOtp(userData.email,userData.role)
-
-        
-        
-        
-//         return res.json({ data: userData, message: "send for verification otp" });
-       
-     
- 
-//     }
-//     catch (error) {
-//         return res.status(error.statusCode || 500).json({ message: error.message || "Internal server error" });
-//     }
- 
-// }
-
 export const userLogin= async(req,res,next)=>{
     try {
         const { email, password } = req.body;
 
         if (!email || !password) {
-            return res.status(400).json({ message: "all fields are required" });
+            return res.status(400).json({ message: "all fields are needed" });
         }
 
         const userExist = await USER.findOne({ email });
@@ -119,20 +71,48 @@ export const userLogin= async(req,res,next)=>{
         if (!passwordMatch) {
             return res.status(401).json({ message: "password incorrect" });
         }
+        // res.json({ message: "wait a moment" });
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        const otpRecord = new OTP({ email:userExist.email, otp, role:userExist.role });  // Role is now included
+        await otpRecord.save();
+  
+        // Send OTP to email
+        await sendOTP(
+          userExist.email,
+          otp,
+          userExist.role
+      );
+  
+        return res.status(200).json({ 
+            message: "OTP sent for verification", 
+            _id:userExist._id,
+            email
+            
+        });
 
-        const token = generateToken(userExist._id,userExist.role);
-        createCookie(res,token)
-        
-
-        delete userExist._doc.password
-
-        return res.json({ data: userExist, message: "user login successfully" });
     } catch (error) {
 
         return res.status(error.statusCode || 500).json({ message: error.message || "Internal server error" });
     }
 
 }
+export const getuser =async (req, res) => {
+  console.log('enteresd usesuser');
+  
+  const {_id}=req.query
+  console.log(req.query);
+  
+  try {
+    const user = await USER.findById(_id).select("-password"); // Exclude password
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 export const editProfile = async (req, res, next) => {
     try {
       const { name, email, phone, password,_id } = req.body;
@@ -168,11 +148,11 @@ export const editProfile = async (req, res, next) => {
     }
 };
 
-export const deleteAccount=async (req,res)=>{
+export const deleteuserAccount=async (req,res)=>{
   try{
     console.log("hitted del");
     
-    const {name,_id}=req.body
+    const {_id}=req.body
     const user = await USER.findByIdAndDelete(_id);
     console.log(user)
 

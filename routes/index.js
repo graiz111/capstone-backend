@@ -14,10 +14,10 @@ app.use(express.json())
 app.use(cookieParser())
 app.use(bodyParser.urlencoded({ extended: true })); 
 
-router.use('/users', userRouter);
+router.use('/user', userRouter);
 router.use('/admin', adminRouter);
 router.use('/restaurant', restaurantRouter);
-router.use('/deliveryassign',deliveryBoyRoutes)
+router.use('/delivery',deliveryBoyRoutes)
 router.use('/restaurantadd',itemsRoutes)
 
 
