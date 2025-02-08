@@ -5,7 +5,7 @@ import { CART } from "../models/cartModel.js";
 import { REVIEW } from "../models/reviewModel.js";
 import {ORDER} from '../models/orderModel.js'
 import {ADDRESS} from '../models/addressModel.js'
-import { sendOtp, verifyOtp } from "./sendOtpController.js";
+import {  verifyOtp } from "./sendOtpController.js";
 import { RESTAURANT } from "../models/restaurantModel.js";
 import { generateToken } from "../utils/token.js";
 import { createCookie } from "../utils/cookie.js";
@@ -53,6 +53,8 @@ export const userSignup = async (req, res, next) => {
   }
 };
 export const userLogin= async(req,res,next)=>{
+  console.log('login controller');
+  
     try {
         const { email, password } = req.body;
 
@@ -97,7 +99,7 @@ export const userLogin= async(req,res,next)=>{
 
 }
 export const getuser =async (req, res) => {
-  console.log('enteresd usesuser');
+  console.log('entered user ');
   
   const {_id}=req.query
   console.log(req.query);

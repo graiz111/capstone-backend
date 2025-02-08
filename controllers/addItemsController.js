@@ -4,10 +4,14 @@ import { RESTAURANT } from "../models/restaurantModel.js";
 
 export const addItemToRestaurant = async (req, res) => {
   try {
-    const { restaurant_id, name, price, description,itemPic } = req.body;
+    const {name, price, description} = req.body;
+    const{id}=req.restaurant
+    console.log(req.body)
+    console.log(req.restaurant);
+    
 
    
-    const restaurant = await RESTAURANT.findById(restaurant_id);
+    const restaurant = await RESTAURANT.findById(id);
     console.log(restaurant);
     
     if (!restaurant) {
@@ -20,11 +24,11 @@ export const addItemToRestaurant = async (req, res) => {
 
    
     const newItem = new ITEMS({
+      restaurant_id: id,
       name,
       price,
       description,
       itemPic:itemPicUrl,
-      restaurant_id: restaurant_id,
     });
 
    
@@ -36,33 +40,42 @@ export const addItemToRestaurant = async (req, res) => {
     res.status(201).json({ message: "Item added successfully.", data: savedItem });
   } catch (error) {
     console.error("Error adding item:", error);
-    res.status(500).json({ message: "Internal server error." });
+    res.status(500).json({ message: "Internal br  server error." });
   }
 };
 export const getItemsByRestaurant = async (req, res) => {
-    try {
-      const { restaurantId } = req.params;
-  
-      // Fetch all items for the given restaurant
-      const items = await ITEMS.find({ restaurant: restaurantId });
-  
+  try {
+      console.log("Entered getAllItems of restaurant");
+      const { id } = req.restaurant;
+      console.log(id);
+      
+
+      const items = await ITEMS.find({ restaurant_id: id });
+      console.log(items);
+      
+
       if (!items || items.length === 0) {
-        return res.status(404).json({ message: "No items found for this restaurant." });
+          return res.status(404).json({ message: "No items found for this restaurant." });
       }
-  
+
       res.status(200).json({ message: "Items fetched successfully.", data: items });
-    } catch (error) {
+  } catch (error) {
       console.error("Error fetching items:", error);
       res.status(500).json({ message: "Internal server error." });
-    }
+  }
 };
 export const deleteItemFromRestaurant = async (req, res) => {
+  console.log('enterede delee items');
+  
   try {
-    const { restaurantId, itemId } = req.params;
+    const {item_id} = req.params;
+    const {id} = req.restaurant;
+    console.log(item_id,id);
+    
 
     const deletedItem = await ITEMS.findOneAndDelete({
-      _id: itemId,     
-      restaurant: restaurantId  
+      _id: item_id,
+      restaurant_id:id,  
     });
 
     if (!deletedItem) {
@@ -75,18 +88,21 @@ export const deleteItemFromRestaurant = async (req, res) => {
     res.status(500).json({ message: "Internal server error." });
   }
 };
+
 export const updateItem = async (req, res) => {
   try {
-    
-    const {restaurant_id, item_id, name, price, description, itemPic } = req.body; 
-    const itemPicUrl = req.cloudinaryResult.secure_url;
-    if (!itemPicUrl) {
-      return res.status(400).json({ message: "File upload failed." });
+    const { item_id } = req.params;
+    const { name, price, description } = req.body;
+    const itemPicUrl = req.cloudinaryResult?.secure_url; 
+
+    const updateData = { name, price, description };
+    if (itemPicUrl) {
+      updateData.itemPic = itemPicUrl; 
     }
 
     const updatedItem = await ITEMS.findOneAndUpdate(
-      { _id: item_id, restaurant_id: restaurant_id }, 
-      { name, price, description, itemPic:itemPicUrl }, 
+      { _id: item_id },
+      updateData,
       { new: true } 
     );
 

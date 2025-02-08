@@ -2,7 +2,7 @@ import { ADMIN } from "../models/adminModel.js";
 import { createCookie } from "../utils/cookie.js";
 import { generateToken } from "../utils/token.js";
 import bcrypt from 'bcrypt'
-import { sendOtp } from "./sendOtpController.js";
+
 import { COUPON } from "../models/couponModel.js";
 import { OTP } from "../models/otpModel.js";
 import { sendOTP } from "../utils/otpMail.js";

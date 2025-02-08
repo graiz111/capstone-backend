@@ -15,7 +15,7 @@ const itemsSchema = new mongoose.Schema({
         required: true }, 
     category: { 
         type: String },              
-    image: { 
+    itemPic: { 
         type: String },                 
     ingredients: { 
         type: [String] },         

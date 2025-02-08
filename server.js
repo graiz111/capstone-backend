@@ -5,8 +5,7 @@ import dotenv from 'dotenv';
 import cookieParser from "cookie-parser";
 import bodyParser from 'body-parser';
 import cors from 'cors'
-import twilio from 'twilio'
-import multer  from 'multer';
+
 dotenv.config();
 
 const app = express();
@@ -17,11 +16,11 @@ app.use(express.json())
 app.use(cookieParser())
 app.use(bodyParser.urlencoded({ extended: true })); 
 
-app.use(cors({
-  origin: "http://localhost:3000", // Allow requests from React frontend
-  credentials: true,              // Allow cookies to be sent
-}));
 
+app.use(cors({
+  origin: "http://localhost:3000", 
+  credentials: true,            
+}));
 
 
 mongoose.connect(MONGO_URI)
@@ -30,17 +29,7 @@ mongoose.connect(MONGO_URI)
 
 
 
-
-
 app.use('/api', mainRouter);
-
-
-
-
-
-
-
-
 
 
 

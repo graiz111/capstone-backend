@@ -3,7 +3,7 @@ import { generateToken } from "../utils/token.js";
 import { createCookie } from "../utils/cookie.js";
 import { DELIVERY } from '../models/deliverBoyModels.js';
 import { RESTAURANT } from '../models/restaurantModel.js';
-import { sendOtp } from './sendOtpController.js';
+
 import { OTP } from '../models/otpModel.js';
 import { sendOTP } from '../utils/otpMail.js';
 

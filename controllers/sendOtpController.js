@@ -1,4 +1,4 @@
-import { sendOTP } from "../utils/otpMail.js";
+
 import { OTP } from "../models/otpModel.js";
 import { generateToken } from "../utils/token.js";
 import { createCookie } from "../utils/cookie.js";
@@ -9,28 +9,6 @@ import { DELIVERY } from "../models/deliverBoyModels.js";
 import {ADMIN} from '../models/adminModel.js'
 
 
-export const sendOtp = async (email,role) => {
- 
-
-
-  try {
-    const otp = Math.floor(100000 + Math.random() * 900000).toString(); 
-
-    const otpRecord = new OTP({
-      email,
-      role,
-      otp,
-    });
-    await otpRecord.save();
-
-    await sendOTP(email, role, otp);
-
-    
-  } catch (error) {
-    console.error("Error sending OTP: ", error);
-   ;
-  }
-};
 
 export const verifyOtp = async (req, res) => {
     const { email, otp, role, name, phone, password, profilePicUrl } = req.body;
@@ -134,8 +112,6 @@ export const otpverifypassword=async(req,res)=>{
 
 }
 
-
-
 export const passwordreset = async (req, res) => {
   try {
     console.log("Password reset endpoint hit");
@@ -235,6 +211,8 @@ export const verifyOtpLogin = async (req, res) => {
     // console.log(newUser);
     
     const token = generateToken(newUser._id, newUser.role);
+    console.log(token);
+    
     createCookie(res, token);
 
     return res.status(200).json({
@@ -246,13 +224,13 @@ export const verifyOtpLogin = async (req, res) => {
         phone: newUser.phone ,
         profilePic:newUser.profilePic, 
         role 
-      }
+      },success:true
   });
       
       
   } catch (error) {
       console.error("Error verifying OTP:", error);
-      return res.status(500).json({ message: "Failed to verify OTP", error: error.message });
+      return res.status(500).json({ message: "Failed to verify OTP", error: error.message ,success:false});
   }
 };
 

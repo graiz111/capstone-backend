@@ -3,12 +3,13 @@ import { RESTAURANT } from '../models/restaurantModel.js';
 import { generateToken } from '../utils/token.js';
 import { createCookie } from '../utils/cookie.js';
 import { REVIEW } from '../models/reviewModel.js';
-import { sendOtp } from './sendOtpController.js';
+
 import { USER } from '../models/userModel.js';
 import { CART } from '../models/cartModel.js';
 import {ORDER} from '../models/orderModel.js'
 import { OTP } from '../models/otpModel.js';
 import { sendOTP } from '../utils/otpMail.js';
+import { log } from 'console';
 
 
 
@@ -219,14 +220,11 @@ export const deleteAccount=async (req,res)=>{
   }
 }
 export const getAllRestaurants = async (req, res) => {
-  
-    console.log('entered restaurant find one ');
     
-    const {_id}=req.query
-    console.log(req.query);
+    const {res_id}=req.params
     
     try {
-      const user = await RESTAURANT.findById(_id).select("-password"); 
+      const user = await RESTAURANT.findById(res_id).select("-password"); 
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
