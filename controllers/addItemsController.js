@@ -45,13 +45,32 @@ export const addItemToRestaurant = async (req, res) => {
 };
 export const getItemsByRestaurant = async (req, res) => {
   try {
-      console.log("Entered getAllItems of restaurant");
-      const { id } = req.restaurant;
-      console.log(id);
+    console.log("Entered getAllItems of restaurant");
+
+    const {_id} = req.params; 
+    console.log("Restaurant ID:", _id);
+
+    const items = await ITEMS.find({ restaurant_id: _id });
+    console.log("Fetched Items:", items);
+
+    if (!items || items.length === 0) {
+      return res.status(404).json({ message: "No items found for this restaurant." });
+    }
+
+    res.status(200).json({ message: "Items fetched successfully.", data: items });
+  } catch (error) {
+    console.error("Error fetching items:", error);
+    res.status(500).json({ message: "Internal server error." });
+  }
+};
+
+export const getItemsall = async (req, res) => {
+  try {
+    
       
 
-      const items = await ITEMS.find({ restaurant_id: id });
-      console.log(items);
+      const items = await ITEMS.find();
+      
       
 
       if (!items || items.length === 0) {
@@ -64,6 +83,36 @@ export const getItemsByRestaurant = async (req, res) => {
       res.status(500).json({ message: "Internal server error." });
   }
 };
+export const getRestaurantByItemId = async (req, res) => {
+  try {
+    console.log("Entered add to cart fetchres");
+
+    const { itemId } = req.body; // Extract item ID from request body
+
+    // Find the item by ID and select only the restaurant_id
+    const item = await ITEMS.findById(itemId).select("restaurant_id");
+
+    if (!item) {
+      return res.status(404).json({ message: "Item not found." });
+    }
+
+    const restaurantId = item.restaurant_id.toString(); // Convert ObjectId to string
+
+    console.log("Restaurant ID:", restaurantId);
+
+    res.status(200).json({ 
+      message: "Restaurant ID fetched successfully.", 
+      restaurant_id: restaurantId, 
+      success: true 
+    });
+
+  } catch (error) {
+    console.error("Error fetching restaurant ID:", error);
+    res.status(500).json({ message: "Internal server error." });
+  }
+};
+
+
 export const deleteItemFromRestaurant = async (req, res) => {
   console.log('enterede delee items');
   
@@ -90,6 +139,8 @@ export const deleteItemFromRestaurant = async (req, res) => {
 };
 
 export const updateItem = async (req, res) => {
+  console.log("entered update item ");
+  
   try {
     const { item_id } = req.params;
     const { name, price, description } = req.body;
@@ -110,7 +161,7 @@ export const updateItem = async (req, res) => {
       return res.status(404).json({ message: "Item not found or does not belong to this restaurant." });
     }
 
-    res.status(200).json({ message: "Item updated successfully.", data: updatedItem });
+    res.status(200).json({ message: "Item updated successfully.", data: updatedItem ,success:true});
   } catch (error) {
     console.error("Error updating item:", error);
     res.status(500).json({ message: "Internal server error." });

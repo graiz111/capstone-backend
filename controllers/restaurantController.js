@@ -221,20 +221,53 @@ export const deleteAccount=async (req,res)=>{
 }
 export const getAllRestaurants = async (req, res) => {
     
-    const {res_id}=req.params
     
-    try {
-      const user = await RESTAURANT.findById(res_id).select("-password"); 
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-      res.json(user);
-    } catch (error) {
-      res.status(500).json({ message: "Server error" });
+    
+  try {
+    const users = await RESTAURANT.find().select("-password"); 
+    if (!users) {
+      return res.status(404).json({ message: "User not found",});
     }
+    res.json({data:users});
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
+
   
-    
 };
+export const getSingleRestaurant = async (req, res) => {
+  try {
+    const { restaurantId } = req.params; 
+
+    const restaurant = await RESTAURANT.findById(restaurantId).select("-password"); 
+    if (!restaurant) {
+      return res.status(404).json({ message: "Restaurant not found"});
+    }
+
+    res.json({ data: restaurant,success:true  });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+export const getresresRestaurant = async (req, res) => {
+  try {
+    console.log("hitted new imp");
+    
+    const { id} = req.restaurant; 
+    console.log(req.restaurant);
+    
+
+    const restaurant = await RESTAURANT.findById(id).select("-password"); 
+    if (!restaurant) {
+      return res.status(404).json({ message: "Restaurant not found" });
+    }
+
+    res.json({ data: restaurant,success:true });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
 export const getAllOrdersForRestaurant = async (req, res) => {
   try {
     const { id: restaurantId } = req.body

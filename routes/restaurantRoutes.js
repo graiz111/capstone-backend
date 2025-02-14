@@ -1,5 +1,5 @@
 import express from 'express';
-import { deleteAccount, deleteOrder, editProfile, getAllOrdersForRestaurant, getAllRestaurants, getRatings, logOut, reseditProfilePic, resforgotpassword, resReview, restaurantLogin, restaurantSignup } from '../controllers/restaurantController.js';
+import { deleteAccount, deleteOrder, editProfile, getAllOrdersForRestaurant, getAllRestaurants, getRatings, getresresRestaurant, getSingleRestaurant, logOut, reseditProfilePic, resforgotpassword, resReview, restaurantLogin, restaurantSignup } from '../controllers/restaurantController.js';
 import {restaurantAuth } from "../middlewares/restaurantAuth.js"
 import { itemsRoutes } from './itemsRoutes.js';
 import { otpverifypassword, passwordreset, verifyOtp, verifyOtpLogin } from '../controllers/sendOtpController.js';
@@ -13,7 +13,9 @@ router.post('/otpverify',verifyOtp)
 router.post('/login',restaurantLogin)
 router.post('/otploginverify',verifyOtpLogin)
 router.put('/editprofile',restaurantAuth,editProfile)
-router.get('/users/:res_id',getAllRestaurants)
+router.get('/allrestaurant',getAllRestaurants)
+router.get('/getsingleres/:restaurantId',getSingleRestaurant)
+router.get('/getrestaurant',restaurantAuth,getresresRestaurant)
 router.put('/profilepicupload',processUpload,reseditProfilePic)
 router.put('/forgotpassword', restaurantAuth,resforgotpassword)
 router.put('/verifyreset',restaurantAuth ,otpverifypassword,passwordreset)

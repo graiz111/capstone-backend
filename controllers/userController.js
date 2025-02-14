@@ -99,17 +99,16 @@ export const userLogin= async(req,res,next)=>{
 
 }
 export const getuser =async (req, res) => {
-  console.log('entered user ');
+
   
-  const {_id}=req.query
-  console.log(req.query);
-  
+  const {_id}=req.params
+
   try {
     const user = await USER.findById(_id).select("-password"); // Exclude password
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-    res.json(user);
+    res.json({data:user,success:true});
   } catch (error) {
     res.status(500).json({ message: "Server error" });
   }
@@ -270,61 +269,7 @@ export const userforgotpassword=async(req,res)=>{
 
 }
 
-export const addItemToCart = async (req, res) => {
-  try {
-    const { user_id, restaurant_id, item_id, quantity } = req.body;
 
-    if (!user_id || !restaurant_id || !item_id || !quantity) {
-      return res.status(400).json({ message: "Missing required fields." });
-    }
-
-    // Check if the restaurant exists
-    const restaurant = await RESTAURANT.findById(restaurant_id);
-    if (!restaurant) {
-      return res.status(404).json({ message: "Restaurant not found." });
-    }
-
-    // Check if the food item exists
-    const foodItem = await ITEMS.findById(item_id);
-    if (!foodItem) {
-      return res.status(404).json({ message: "Item not found." });
-    }
-
-    // Check if the cart exists for the user
-    let cart = await CART.findOne({ user: user_id, restaurant: restaurant_id });
-
-    if (!cart) {
-      cart = new CART({
-        user: user_id,
-        restaurant: restaurant_id,
-        items: [],
-        totalPrice: 0,
-      });
-    }
-
-    // Check if the item already exists in the cart
-    const existingItem = cart.items.find(item => item.item.toString() === item_id);
-
-    if (existingItem) {
-      // Update quantity if the item already exists
-      existingItem.quantity += quantity;
-    } else {
-      // Add new item to the cart
-      cart.items.push({ item: item_id, quantity });
-    }
-
-    // Update the total price
-    cart.totalPrice += foodItem.price * quantity;
-
-    // Save the cart
-    await cart.save();
-
-    res.status(200).json({ message: "Item added to cart", cart });
-  } catch (error) {
-    console.error("Error adding item to cart:", error);
-    res.status(500).json({ message: "Internal server error", error });
-  }
-};
 
 export const orderCreate = async (req, res) => {
   try {

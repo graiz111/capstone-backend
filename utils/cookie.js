@@ -4,7 +4,7 @@ export const createCookie = (res, token) => {
         secure: process.env.NODE_ENV === 'production', // Ensure secure cookies in production
         sameSite: 'strict', // Helps prevent CSRF attacks
         path: '/', // Cookie accessible across all routes
-        maxAge: 60 * 60 * 1000, // 1 hour expiration
+        maxAge: 24 * 60 * 60 * 1000, // 1 day expiration
     });
 };
 

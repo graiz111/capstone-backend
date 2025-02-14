@@ -9,14 +9,14 @@ const cartSchema = new mongoose.Schema({
   restaurant_id: { 
     type: mongoose.Schema.Types.ObjectId, 
     ref: 'RESTAURANT', 
-    required: true 
+    
   },
   items: [
     {
       item: { 
         type: mongoose.Schema.Types.ObjectId, 
         ref: 'ITEMS', 
-        required: true 
+        
       },
       quantity: { 
         type: Number, 

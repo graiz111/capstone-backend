@@ -6,6 +6,8 @@ export const restaurantAuth = (req, res, next) => {
     
         // Check if the token exists in cookies
         const { token } = req.cookies;
+        console.log(token,"cookies");
+        
     
         if (!token) {
           return res.status(401).json({

@@ -1,17 +1,19 @@
 import express from 'express';
-import { userLogin,userSignup, editProfilePic, editProfile, logOut, getAllUsers, addItemToCart, addRating, userforgotpassword, orderCreate, validateCoupon, applyCoupon, getuser, deleteuserAccount} from '../controllers/userController.js';
+import { userLogin,userSignup, editProfilePic, editProfile, logOut,  addRating, userforgotpassword, orderCreate, validateCoupon, applyCoupon, getuser, deleteuserAccount} from '../controllers/userController.js';
 const router = express.Router();
 import { processUpload} from '../utils/cloudinary.js';
 import { userAuth } from '../middlewares/userAuth.js';
 import {  otpverifypassword, passwordreset,  verifyOtp, verifyOtpLogin } from '../controllers/sendOtpController.js';
+import { addItemToCart, getUserCart } from '../controllers/cartController.js';
 
 
 router.post('/signup',processUpload,userSignup,);
 router.post('/otpverify',verifyOtp)
-router.get('/user',getuser)
+router.get('/user/:_id',getuser)
 router.post('/login',userLogin);
 router.post('/otploginverify',verifyOtpLogin)
-router.put('/additemtocart', addItemToCart)
+router.post('/additemtocart',userAuth,addItemToCart)
+router.get('/cart/:userId', userAuth, getUserCart);
 router.post('/order',orderCreate)
 router.put('/addrating',addRating)
 router.delete('/delete',userAuth,deleteuserAccount);
