@@ -20,7 +20,9 @@ export const verifyToken = (req, res) => {
     if (err) {
       return res.json({ success: false, message: "Invalid token" });
     }
-    res.json({ success: true, user: decoded.user });
+    console.log(decoded,"decoded");
+    
+    res.json({ success: true, user: decoded.user,role:decoded.role });
   });
 
 

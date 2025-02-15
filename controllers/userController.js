@@ -1,14 +1,9 @@
+
 import { USER } from "../models/userModel.js";
 import bcrypt from 'bcrypt'
-import { ITEMS } from "../models/itemsModel.js";
 import { CART } from "../models/cartModel.js";
 import { REVIEW } from "../models/reviewModel.js";
 import {ORDER} from '../models/orderModel.js'
-import {ADDRESS} from '../models/addressModel.js'
-import {  verifyOtp } from "./sendOtpController.js";
-import { RESTAURANT } from "../models/restaurantModel.js";
-import { generateToken } from "../utils/token.js";
-import { createCookie } from "../utils/cookie.js";
 import { COUPON } from "../models/couponModel.js";
 import { OTP } from "../models/otpModel.js";
 import { sendOTP } from "../utils/otpMail.js";
@@ -17,9 +12,9 @@ import { sendOTP } from "../utils/otpMail.js";
 
 export const userSignup = async (req, res, next) => {
   try {
-      const { name, email, phone, password, role } = req.body;  // Include `role`
+      const { name, email, phone, password, role } = req.body;  
       
-      if (!name || !email || !password || !phone || !role) {  // Validate `role`
+      if (!name || !email || !password || !phone || !role) {  
           return res.status(400).json({ message: "All fields are required, including role." });
       }
 
@@ -28,35 +23,36 @@ export const userSignup = async (req, res, next) => {
           return res.status(400).json({ message: "User already exists" });
       }
 
-      // Get uploaded profile pic URL
-      const profilePicUrl = req.cloudinaryResult.secure_url;
-      if (!profilePicUrl) {
-          return res.status(400).json({ message: "File upload failed." });
-      }
+      // Check if Cloudinary uploaded an image
+      const profilePicUrl = req.cloudinaryResult?.secure_url || null;
 
-      // Generate OTP and store it in OTP collection (Include `role`)
+      // Generate OTP and store it in OTP collection
       const otp = Math.floor(100000 + Math.random() * 900000).toString();
-      const otpRecord = new OTP({ email, otp, role });  // Role is now included
+      const otpRecord = new OTP({ email, otp, role });
       await otpRecord.save();
 
       // Send OTP to email
-      await sendOTP(email,otp,role);
+      await sendOTP(email, otp, role);
 
       return res.status(200).json({ 
           message: "OTP sent for verification", 
           email,
-          profilePicUrl
+          profilePicUrl ,
+          success:true // Will be `null` if no image was uploaded
       });
 
   } catch (error) {
       return res.status(500).json({ message: "Internal server error", error: error.message });
   }
 };
+
 export const userLogin= async(req,res,next)=>{
   console.log('login controller');
   
     try {
         const { email, password } = req.body;
+        console.log(req.body);
+        
 
         if (!email || !password) {
             return res.status(400).json({ message: "all fields are needed" });
@@ -246,37 +242,13 @@ export const getAllUsers = async (req, res) => {
   }
 };
 
-export const userforgotpassword=async(req,res)=>{
 
-  try{
-
-    const {email}=req.body
-    if(!email){
-      return res.status(400).json({message:'email is mandatory '})
-    }
-    const user=await USER.findOne({email})
-    if(!user){
-      res.status(500).json({message:'user not found'})
-    }
-    sendOtp(user.email,user.role)
-    
-
-  }
-  catch{
-    return res.status(500).json({ message: 'internal Server error' });
-
-  }
-
-}
-
-
-
-export const orderCreate = async (req, res) => {
+export const placeCodOrder = async (req, res) => {
   try {
-    const { user_id, address, cart_id, paymentMethod } = req.body;
+    const { user_id, cart_id, addressId } = req.body;
 
     // Validate inputs
-    if (!user_id || !address || !cart_id || !paymentMethod) {
+    if (!user_id || !cart_id || !addressId) {
       return res.status(400).json({ message: "Missing required fields." });
     }
 
@@ -311,8 +283,8 @@ export const orderCreate = async (req, res) => {
       restaurant_id: restaurantId,
       items: orderItems,
       totalPrice,
-      address,
-      paymentMethod,
+      address: addressId,
+      paymentMethod: 'COD',
       status: 'Placed', // Valid enum value
     });
 
@@ -324,10 +296,49 @@ export const orderCreate = async (req, res) => {
     cart.totalPrice = 0;
     await cart.save();
 
-    res.status(200).json({ message: "Order created successfully", order });
+    res.status(200).json({ success: true, orderId: order._id });
   } catch (error) {
-    console.error("Error creating order:", error);
-    res.status(500).json({ message: "Error creating order", error });
+    console.error("Error placing COD order:", error);
+    res.status(500).json({ message: "Error placing COD order", error });
+  }
+};
+export const getOrdersByUserId = async (req, res) => {
+  try {
+    console.log("entered order fetch");
+
+    const { userId } = req.params;
+    console.log(req.user, "user");
+
+    // Validate inputs
+    if (!userId) {
+      return res.status(400).json({ message: "User ID is required." });
+    }
+
+    // Find all orders for the user and populate the necessary fields
+    const orders = await ORDER.find({ user_id: userId })
+      .populate({
+        path: 'restaurant_id',
+        select: 'name', // Only select the 'name' field of the restaurant
+      })
+      .populate({
+        path: 'items.item_id',
+        select: 'name', // Only select the 'name' field of the item
+      })
+      .populate({
+        path: 'user_id',
+        select: 'address', // Assuming the user model has an 'address' field
+      });
+
+    if (!orders || orders.length === 0) {
+      return res.status(404).json({ message: "No orders found for this user." });
+    }
+
+    console.log(orders);
+
+    res.status(200).json({ orders });
+  } catch (error) {
+    console.error("Error fetching orders by user ID:", error);
+    res.status(500).json({ message: "Error fetching orders by user ID", error });
   }
 };
 export const validateCoupon = async (req, res) => {
@@ -418,23 +429,7 @@ export const coddelivery=async(req,res)=>{
     res.status(500).json({ message: 'Error creating order', error });
   }
 }
-export const addaddresspayment =async(req,res)=>{
-  try {
-    const {userId}=req.user.id
-    if(!userId){
-      return res.status(400).json({message:'user not found '})
-    }
-    const address= await ADDRESS.findOne({user_id:userId})
-    if(!address){
-      return res.status(400).json({message:'user address not found '})
 
-    }
-    res.status(200).json({message:'address fetched ',data:address})
-
-  } catch (error) {
-    
-  }
-}
 export const addRating=async(req, res)=>{
   const { userId, restaurantId, rating, comment } = req.body;
 
@@ -467,6 +462,7 @@ export const addRating=async(req, res)=>{
     res.status(500).json({ message: 'Error adding rating', error });
   }
 }
+
 
 
 

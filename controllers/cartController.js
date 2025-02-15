@@ -4,8 +4,12 @@ import { ITEMS } from '../models/itemsModel.js';
 
 // Add item to cart
 export const addItemToCart = async (req, res) => {
+  console.log("aditm cart");
+  
   try {
     const { user_id, restaurant_id, item_id } = req.body;
+    console.log(req.body,"bodyinadd");
+    
 
     // Check if user already has a cart
     let userCart = await CART.findOne({ user: user_id });
@@ -99,7 +103,8 @@ export const getUserCart = async (req, res) => {
     
     return res.status(200).json({
       success: true,
-      data: cart
+      data: cart,
+      
     });
   } catch (error) {
     console.error("Get cart error:", error);
@@ -114,8 +119,9 @@ export const getUserCart = async (req, res) => {
 // Update item quantity
 export const updateCartItem = async (req, res) => {
   try {
-    const { cartItemId } = req.params;
+    const { itemId } = req.params;  // Fixed variable name
     const { userId, quantity } = req.body;
+    console.log(req.body, req.params, "in update cart");
 
     const cart = await CART.findOne({ user: userId });
     if (!cart) {
@@ -125,7 +131,10 @@ export const updateCartItem = async (req, res) => {
       });
     }
 
-    const cartItem = cart.items.find(item => item._id.toString() === cartItemId);
+    console.log(cart);
+
+    // Find item in cart
+    const cartItem = cart.items.find(item => item._id.toString() === itemId);
     if (!cartItem) {
       return res.status(404).json({
         success: false,
@@ -136,10 +145,18 @@ export const updateCartItem = async (req, res) => {
     // Update quantity
     cartItem.quantity = quantity;
 
+    // Fetch item details to get price
+    const itemDetails = await ITEMS.findById(cartItem.item);
+    if (!itemDetails) {
+      return res.status(404).json({
+        success: false,
+        message: "Item details not found"
+      });
+    }
+
     // Recalculate total price
-    const item = await ITEMS.findById(cartItem.item);
-    cart.totalPrice = cart.items.reduce((total, item) => {
-      return total + (item.price * item.quantity);
+    cart.totalPrice = cart.items.reduce((total, cartItem) => {
+      return total + (cartItem.quantity * itemDetails.price); // Fetching price from DB
     }, 0);
 
     await cart.save();
@@ -159,6 +176,7 @@ export const updateCartItem = async (req, res) => {
     });
   }
 };
+
 
 // Remove item from cart
 export const removeCartItem = async (req, res) => {
@@ -212,6 +230,42 @@ export const removeCartItem = async (req, res) => {
       success: false,
       message: "Error removing item from cart",
       error: error.message
+    });
+  }
+};
+export const clearCart = async (req, res) => {
+  try {
+    const { userId } = req.params;// Get user ID from request body
+
+    // Find the user's cart
+    const cart = await CART.findOne({ user: userId });
+
+    if (!cart) {
+      return res.status(404).json({
+        success: false,
+        message: "Cart not found",
+      });
+    }
+
+    // Clear all items from the cart
+    cart.items = [];
+    cart.restaurant_id = null;  // Reset restaurant ID
+    cart.totalPrice = 0;        // Reset total price
+
+    await cart.save(); // Save the updated cart
+
+    return res.status(200).json({
+      success: true,
+      message: "Cart has been cleared successfully",
+      data: cart,
+    });
+
+  } catch (error) {
+    console.error("Clear cart error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Error clearing cart",
+      error: error.message,
     });
   }
 };

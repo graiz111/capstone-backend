@@ -70,7 +70,8 @@ export const verifyOtp = async (req, res) => {
               phone: newUser.phone ,
               profilePic:newUser.profilePic, 
               role 
-            }
+            },
+            success:true
         });
 
 
@@ -233,7 +234,3 @@ export const verifyOtpLogin = async (req, res) => {
       return res.status(500).json({ message: "Failed to verify OTP", error: error.message ,success:false});
   }
 };
-
-
-
-
