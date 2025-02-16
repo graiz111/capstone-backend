@@ -9,6 +9,8 @@ import { sendOTP } from '../utils/otpMail.js';
 
 
 export const deliveryPersonSignup= async (req,res,next)=>{
+  console.log("entered signup");
+  
     try {
       const { name, email, phone, password, role } = req.body;  
       
@@ -21,10 +23,7 @@ export const deliveryPersonSignup= async (req,res,next)=>{
           return res.status(400).json({ message: "admin already exists" });
       }
 
-      const profilePicUrl = req.cloudinaryResult.secure_url;
-      if (!profilePicUrl) {
-        res.status(400).json({ message: "File upload failed." });
-      }
+      const profilePicUrl = req.cloudinaryResult?.secure_url || null;
 
       const otp = Math.floor(100000 + Math.random() * 900000).toString();
       const otpRecord = new OTP({ email, otp, role });  
@@ -35,7 +34,8 @@ export const deliveryPersonSignup= async (req,res,next)=>{
       return res.status(200).json({ 
           message: "OTP sent for verification", 
           email,
-          profilePicUrl
+          profilePicUrl,
+          success:true
       });
 
   } catch (error) {
@@ -45,8 +45,12 @@ export const deliveryPersonSignup= async (req,res,next)=>{
   }
 
 export const deliveryPersonLogin= async(req,res,next)=>{
+  console.log("entered login ");
+  
     try {
                const { email, password } = req.body;
+               console.log(req.body,"reqbodydellogin");
+               
        
                if (!email || !password) {
                    return res.status(400).json({ message: "all fields are needed" });
@@ -91,15 +95,16 @@ export const deliveryPersonLogin= async(req,res,next)=>{
 export const getdeliverybooy =async (req, res) => {
   console.log('enteresd delivery get');
   
-  const {_id}=req.query
-  console.log(req.query);
+  const { deliveryId } = req.params; 
+
+  console.log(req.params);
   
   try {
-    const user = await DELIVERY.findById(_id).select("-password"); // Exclude password
+    const user = await DELIVERY.findById(deliveryId).select("-password"); // Exclude password
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-    res.json(user);
+    res.json({data:user,success:true});
   } catch (error) {
     res.status(500).json({ message: "Server error" });
   }
@@ -248,5 +253,39 @@ export const getAllDeliveryP = async (req, res) => {
   } catch (error) {
     console.error("Error fetching deliveryPersons:", error);
     res.status(500).json({ message: "Internal server error." });
+  }
+};
+export const delforgotpassword = async (req, res) => {
+  try {
+    console.log("Entered del  forgot password");
+
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ message: 'Email is mandatory' });
+    }
+
+    // Find restaurant user
+    const user = await DELIVERY.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: 'Delivery p not found' });
+    }
+
+    // Generate OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    
+    // Extract role from user
+    const role = user.role;
+
+    // Save OTP record
+    const otpRecord = new OTP({ email, otp, role });
+    await otpRecord.save();
+
+    // Send OTP via email
+    await sendOTP(email, otp, role);
+
+    return res.status(200).json({ message: 'OTP sent successfully' ,success:true});
+  } catch (error) {
+    console.error("Forgot password error:", error.message);
+    return res.status(500).json({ message: 'Internal server error' });
   }
 };

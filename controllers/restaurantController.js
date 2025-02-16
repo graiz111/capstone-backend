@@ -26,11 +26,7 @@ export const restaurantSignup= async (req,res,next)=>{
               return res.status(400).json({ message: "Restaurant already exists" });
           }
     
-          // Get uploaded profile pic URL
-          const profilePicUrl = req.cloudinaryResult.secure_url;
-          if (!profilePicUrl) {
-            res.status(400).json({ message: "File upload failed." });
-          }
+          const profilePicUrl = req.cloudinaryResult?.secure_url || null;
     
           // Generate OTP and store it in OTP collection (Include `role`)
           const otp = Math.floor(100000 + Math.random() * 900000).toString();
@@ -43,11 +39,12 @@ export const restaurantSignup= async (req,res,next)=>{
           return res.status(200).json({ 
               message: "OTP sent for verification", 
               email,
-              profilePicUrl
+              profilePicUrl,
+              success:true
           });
     
       } catch (error) {
-          return res.status(500).json({ message: "Internal server error", error: error.message });
+          return res.status(500).json({ message: "Internal server error inbackend", error: error.message });
       }
  
 }
@@ -161,28 +158,40 @@ export const reseditProfilePic = async (req, res) => {
     return res.status(500).json({ message: "Server error" });
   }
 };
-export const resforgotpassword=async(req,res)=>{
+export const resforgotpassword = async (req, res) => {
+  try {
+    console.log("Entered forgot password");
 
-  try{
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ message: 'Email is mandatory' });
+    }
 
-    const {email}=req.body
-    if(!email){
-      return res.status(400).json({message:'email is mandatory '})
+    // Find restaurant user
+    const user = await RESTAURANT.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: 'Restaurant not found' });
     }
-    const user=await RESTAURANT.findOne({email})
-    if(!user){
-      res.status(500).json({message:'restaurant not found'})
-    }
-    sendOtp(user.email,user.role)
+
+    // Generate OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
     
+    // Extract role from user
+    const role = user.role;
 
+    // Save OTP record
+    const otpRecord = new OTP({ email, otp, role });
+    await otpRecord.save();
+
+    // Send OTP via email
+    await sendOTP(email, otp, role);
+
+    return res.status(200).json({ message: 'OTP sent successfully' ,success:true});
+  } catch (error) {
+    console.error("Forgot password error:", error.message);
+    return res.status(500).json({ message: 'Internal server error' });
   }
-  catch{
-    return res.status(500).json({ message: 'internal Server error' });
-
-  }
-
-}
+};
 export const logOut= (req,res)=>{
     try{
       
@@ -267,18 +276,20 @@ export const getresresRestaurant = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
-
 export const getAllOrdersForRestaurant = async (req, res) => {
   try {
-    const { id: restaurantId } = req.body
+    const { id: restaurantId } = req.restaurant;
 
     if (!restaurantId) {
       return res.status(400).json({ message: "Restaurant ID is required.", success: false });
     }
 
-    const orders = await ORDER.find({ restaurant_id: restaurantId })
-      .populate("items.item", "name price") 
-      .populate("user_id", "name email")   
+    const orders = await ORDER.find(
+      { restaurant_id: restaurantId },
+      { sessionId: 1, status: 1, totalPrice: 1, createdAt: 1 } // Include only these fields
+    )
+      .populate("items.item", "name price")
+      .populate("user_id", "name email")
       .lean();
 
     if (!orders || orders.length === 0) {
@@ -295,6 +306,34 @@ export const getAllOrdersForRestaurant = async (req, res) => {
     res.status(500).json({ message: "Internal server error.", success: false });
   }
 };
+
+// export const getAllOrdersForRestaurant = async (req, res) => {
+//   try {
+//     const { id: restaurantId } = req.restaurant
+
+//     if (!restaurantId) {
+//       return res.status(400).json({ message: "Restaurant ID is required.", success: false });
+//     }
+
+//     const orders = await ORDER.find({ restaurant_id: restaurantId })
+//       .populate("items.item", "name price") 
+//       .populate("user_id", "name email")   
+//       .lean();
+
+//     if (!orders || orders.length === 0) {
+//       return res.status(404).json({ message: "No orders found for this restaurant.", success: false });
+//     }
+
+//     res.status(200).json({
+//       message: "Orders fetched successfully.",
+//       success: true,
+//       data: orders,
+//     });
+//   } catch (error) {
+//     console.error("Error fetching orders for restaurant:", error);
+//     res.status(500).json({ message: "Internal server error.", success: false });
+//   }
+// };
 export const deleteOrder = async (req, res) => {
   try {
     const { id: restaurantId ,orderId} = req.body; // Assuming restaurant is authenticated

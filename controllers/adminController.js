@@ -8,6 +8,8 @@ import { OTP } from "../models/otpModel.js";
 import { sendOTP } from "../utils/otpMail.js";
 import { USER } from "../models/userModel.js";
 import { DELIVERY } from "../models/deliverBoyModels.js";
+import { RESTAURANT } from "../models/restaurantModel.js";
+import { ORDER } from "../models/orderModel.js";
 
 export const adminSignup= async (req,res,next)=>{
     try {
@@ -243,28 +245,40 @@ export const  toggleActivedelivery=async (req, res) => {
     res.status(500).json({ message: 'Error updating status' });
   }
 };
-export const adminforgotpassword=async(req,res)=>{
+export const adminforgotpassword = async (req, res) => {
+  try {
+    console.log("Entered forgot password");
 
-  try{
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ message: 'Email is mandatory' });
+    }
 
-    const {email}=req.body
-    if(!email){
-      return res.status(400).json({message:'email is mandatory '})
+    // Find restaurant user
+    const user = await ADMIN.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: 'Admin not found' });
     }
-    const user=await ADMIN.findOne({email})
-    if(!user){
-      res.status(500).json({message:'admin not found'})
-    }
-    sendOtp(user.email,user.role)
+
+    // Generate OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
     
+    // Extract role from user
+    const role = user.role;
 
+    // Save OTP record
+    const otpRecord = new OTP({ email, otp, role });
+    await otpRecord.save();
+
+    // Send OTP via email
+    await sendOTP(email, otp, role);
+
+    return res.status(200).json({ message: 'OTP sent successfully' ,success:true});
+  } catch (error) {
+    console.error("Forgot password error:", error.message);
+    return res.status(500).json({ message: 'Internal server error' });
   }
-  catch{
-    return res.status(500).json({ message: 'internal Server error' });
-
-  }
-
-}
+};
 export const logOut= (req,res)=>{
   try{
     
@@ -305,8 +319,35 @@ export const deleteAccount=async (req,res)=>{
 
   }
 }
+export const fetchAllRestaurants = async (req, res) => {
+  try {
+    const restaurants = await RESTAURANT.find({}, { password: 0 }); 
+    res.status(200).json({ success: true, data: restaurants });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Error fetching restaurants', error: err.message });
+  }
+};
+export const fetchAllDeliveryPartners = async (req, res) => {
+  try {
+    const deliveryPartners = await DELIVERY.find({}, { password: 0 }); // Exclude passwords
+    res.status(200).json({ success: true, data: deliveryPartners });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Error fetching delivery partners', error: err.message });
+  }
+};
+export const fetchAllOrders = async (req, res) => {
+  try {
+    const orders = await ORDER.find({})
+      .populate('user_id', 'name email') // Populate user details
+      .populate('restaurant_id', 'name email') // Populate restaurant details
+      .populate('deliveryBoyId', 'name email'); // Populate delivery partner details
+    res.status(200).json({ success: true, data: orders });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Error fetching orders', error: err.message });
+  }
+};
 
-//coupons
+
 export const coupons=async(req,res)=>{
   try {
     const { code, discount, expiresAt } = req.body;

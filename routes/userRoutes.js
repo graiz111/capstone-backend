@@ -1,10 +1,10 @@
 import express from 'express';
-import { userLogin,userSignup, editProfilePic, editProfile, logOut,  addRating, validateCoupon, applyCoupon, getuser, deleteuserAccount, placeCodOrder, getOrdersByUserId} from '../controllers/userController.js';
+import { userLogin,userSignup, editProfilePic, editProfile, logOut,  addRating, validateCoupon, applyCoupon, getuser, deleteuserAccount, placeCodOrder, getOrdersByUserId, userforgotpassword} from '../controllers/userController.js';
 const router = express.Router();
 import { processUpload} from '../utils/cloudinary.js';
 import { userAuth } from '../middlewares/userAuth.js';
 import {  otpverifypassword, passwordreset,  verifyOtp, verifyOtpLogin } from '../controllers/sendOtpController.js';
-import { addItemToCart, getUserCart } from '../controllers/cartController.js';
+
 import { handleUserAddresses } from '../controllers/addressController.js';
 
 
@@ -24,8 +24,9 @@ router.post ('/validatecoupons',validateCoupon)
 router.post('/applycoupon',applyCoupon);
 router.put('/editProfile',userAuth, editProfile);
 
-router.put('/otpverifyreset',otpverifypassword)
-router.put('/resetpassword',userAuth,passwordreset)
+router.post('/forgot-password',userforgotpassword)
+router.post('/verify-forgot-password-otp',otpverifypassword)
+router.post('/reset-password',passwordreset)
 router.put('/editprofilepic',userAuth,processUpload, editProfilePic);
 router.post('/logout',userAuth, logOut);
 

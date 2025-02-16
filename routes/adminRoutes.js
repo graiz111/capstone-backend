@@ -1,6 +1,6 @@
 import express from 'express';
 const router = express.Router()
-import { admineditProfilePic, adminforgotpassword, adminLogin, adminSignup, coupons, deleteAccount, deletecoupon, editProfile, edituser, getadmin, getAlldelivery, getAllusers, logOut, toggleActivedelivery } from '../controllers/adminController.js';
+import { admineditProfilePic, adminforgotpassword, adminLogin, adminSignup, coupons, deleteAccount, deletecoupon, editProfile, edituser, fetchAllDeliveryPartners, fetchAllOrders, fetchAllRestaurants, getadmin, getAlldelivery, getAllusers, logOut, toggleActivedelivery } from '../controllers/adminController.js';
 import {adminAuth} from '../middlewares/adminAuth.js'
 import { processUpload } from '../utils/cloudinary.js';
 import { otpverifypassword, passwordreset, verifyOtp, verifyOtpLogin } from '../controllers/sendOtpController.js';
@@ -22,11 +22,18 @@ router.delete("/deleteuser",deleteuserAccount)
 router.delete("/deletedelivery",deleteDeliveryAccount)
 router.put('/editprofile',adminAuth,editProfile)
 router.put('/profilepicupdate',adminAuth,processUpload,admineditProfilePic)
-router.post('/forgotpassword',adminAuth,adminforgotpassword)
-router.put('/verifyreset',adminAuth,otpverifypassword)
-router.put('/passwordreset',adminAuth,passwordreset)
+router.post('/forgot-password',adminforgotpassword)
+router.post('/verify-forgot-password-otp',otpverifypassword)
+router.post('/reset-password',passwordreset)
 router.get('/userfetch',getAllUsers);
-router.get('/getallres',getAllRestaurants)
+router.get('/resfetch',fetchAllRestaurants)
+router.get('/deliveryfetch',fetchAllDeliveryPartners)
+router.get('/ordersfetch',fetchAllOrders)
+
+
+
+
+
 router.post('/addcoupon',adminAuth,coupons)
 // router.put('/checkcoupons',)
 router.delete('/coupondelete',deletecoupon)

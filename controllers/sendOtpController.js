@@ -15,7 +15,7 @@ export const verifyOtp = async (req, res) => {
     console.log("otpsignupverify server",req.body);
     
 
-    if (!otp || !email || !role || !name || !phone || !password || !profilePicUrl) {
+    if (!otp || !email || !role || !name || !phone || !password ) {
         return res.status(400).json({ message: "All fields are required!" });
     }
 
@@ -48,13 +48,13 @@ export const verifyOtp = async (req, res) => {
         }
 
         const newUser = new UserModel({
-            name,
-            email,
-            password: hashedPassword,
-            phone,
-            profilePic: profilePicUrl,
-            role
-        });
+          name,
+          email,
+          password: hashedPassword,
+          phone,
+          role,
+          ...(profilePicUrl && { profilePic: profilePicUrl }) 
+      });
 
         await newUser.save();
 
@@ -113,30 +113,26 @@ export const otpverifypassword=async(req,res)=>{
 
 }
 
+
+
 export const passwordreset = async (req, res) => {
   try {
     console.log("Password reset endpoint hit");
 
-    const { password, passwordtwo } = req.body;
-    const { id, role } = req.user; 
+    const { email, password,role } = req.body; // Only one password input
+   
 
     console.log("Request body:", req.body);
     console.log("Authenticated user:", req.user);
 
-    if (!password || !passwordtwo) {
+    if (!email || !password) {
       return res.status(400).json({
-        message: "Both passwords are required",
+        message: "Email and password are required",
         success: false,
       });
     }
 
-    if (password !== passwordtwo) {
-      return res.status(400).json({
-        message: "Passwords do not match",
-        success: false,
-      });
-    }
-
+    // Map roles to their corresponding models
     const roleModelMap = {
       user: USER,
       admin: ADMIN,
@@ -153,7 +149,8 @@ export const passwordreset = async (req, res) => {
       });
     }
 
-    const userToEdit = await Model.findById(id);
+    // Find user by email
+    const userToEdit = await Model.findOne({ email });
 
     if (!userToEdit) {
       return res.status(404).json({
@@ -162,8 +159,10 @@ export const passwordreset = async (req, res) => {
       });
     }
 
+    // Hash the new password
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // Update password
     userToEdit.password = hashedPassword;
     await userToEdit.save();
 
@@ -179,6 +178,7 @@ export const passwordreset = async (req, res) => {
     });
   }
 };
+
 
 export const verifyOtpLogin = async (req, res) => {
   const { email,otp,role,_id} = req.body; 

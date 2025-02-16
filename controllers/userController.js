@@ -222,25 +222,49 @@ export const logOut= (req,res)=>{
 
 
 export const getAllUsers = async (req, res) => {
+ 
+    try {
+      const users = await USER.find({}, { password: 0 }); // Exclude passwords
+      res.status(200).json({ success: true, data: users });
+    } catch (err) {
+      res.status(500).json({ success: false, message: 'Error fetching users', error: err.message });
+    }
+  };
+export const userforgotpassword = async (req, res) => {
   try {
-    console.log("Fetching all users...");
+    console.log("Entered forgot password");
 
-    const users = await USER.find().select('-password').lean();
-
-    if (!users || users.length === 0) {
-      return res.status(404).json({ message: "No users found.", success: false });
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ message: 'Email is mandatory' });
     }
 
-    res.status(200).json({
-      message: "Users fetched successfully.",
-      success: true,
-      data: users,
-    });
+    // Find restaurant user
+    const user = await USER.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: 'Admin not found' });
+    }
+
+    // Generate OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    
+    // Extract role from user
+    const role = user.role;
+
+    // Save OTP record
+    const otpRecord = new OTP({ email, otp, role });
+    await otpRecord.save();
+
+    // Send OTP via email
+    await sendOTP(email, otp, role);
+
+    return res.status(200).json({ message: 'OTP sent successfully' ,success:true});
   } catch (error) {
-    console.error("Error fetching users:", error);
-    res.status(500).json({ message: "Internal server error.", success: false });
+    console.error("Forgot password error:", error.message);
+    return res.status(500).json({ message: 'Internal server error' });
   }
 };
+
 
 
 export const placeCodOrder = async (req, res) => {

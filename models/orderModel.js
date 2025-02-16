@@ -13,12 +13,13 @@ const orderSchema = new mongoose.Schema({
   totalPrice: { type: Number, required: true },
   status: {
     type: String,
-    enum: ["Placed", "Preparing", "Out for Delivery", "Delivered"],
+    enum: ["Placed", "Preparing", "Out for Delivery", "Assigned to Delivery Boy", "Delivered"],
     default: "Placed",
   },
   address: { type: String, required: true },
   paymentMethod: { type: String, enum: ["COD", "Online"], required: true },
   sessionId: { type: String, required: true },
+  deliveryBoyId: { type: mongoose.Schema.Types.ObjectId, ref: "DELIVERY" }, // Add this field
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
 });
