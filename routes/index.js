@@ -17,7 +17,7 @@ import { createCheckoutSession, sessionrest} from '../controllers/paymentControl
 
 router.post('/payment/create-checkout-session', createCheckoutSession);
 router.get("/payment/session-status", sessionrest);
-// router.post('/webhook', express.raw({ type: 'application/json' }), handleStripeWebhook);
+
 
 router.use('/user', userRouter);
 router.use('/admin', adminRouter);
@@ -28,7 +28,7 @@ router.use('/usersall',UsersEditRoutes)
 router.use("/orders", orderRoutes);
 router.use("/cart",cartRoutes)
 router.get('/auth/verify-token',verifyToken,)
-// router.get('/auth/verify',verifttokenlogin,)
+
 router.post('/auth/logout',logoutuseredit)
 
 

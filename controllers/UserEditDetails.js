@@ -149,3 +149,61 @@ export const logoutuseredit = async (req, res) => {
   }
 };
 
+export const userEditbyadmin = async (req, res) => {
+  try {
+   
+    const { email, name, phone, status,role } = req.body; 
+
+    // Ensure we get the correct model based on the user's role
+    const getModelByRole = (role) => {
+      switch (role) {
+        case "admin":
+          return ADMIN;
+        case "user":
+          return USER;
+        case "restaurant":
+          return RESTAURANT;
+        case "delivery":
+          return DELIVERY;
+        default:
+          return null;
+      }
+    };
+
+    const Model = getModelByRole(role);
+    if (!Model) {
+      return res.status(400).json({ message: "Invalid role provided" });
+    }
+
+    // Prepare the update data
+    const updateData = {};
+    if (name) updateData.name = name;
+    if (email) updateData.email = email;
+    if (phone) updateData.phone = phone;
+    if (status) updateData.status = status;
+
+    // Find the user by email
+    let userToUpdate = await Model.findOne({ email: email });
+
+    if (!userToUpdate) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Update the user
+    userToUpdate = await Model.findByIdAndUpdate(userToUpdate._id, updateData, { new: true }).select("-password");
+
+    // Return the updated user data
+    res.status(200).json({
+      message: "User updated successfully",
+     success: true
+    });
+
+  } catch (error) {
+    console.error("Error updating user:", error);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
+
+
+

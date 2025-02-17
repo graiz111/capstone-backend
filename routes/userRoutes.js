@@ -16,14 +16,11 @@ router.post('/otploginverify',verifyOtpLogin)
 router.post('/addresses',handleUserAddresses)
 router.post('/order/place',userAuth,placeCodOrder)
 router.get('/orders/:userId',userAuth,getOrdersByUserId)
-
-
 router.put('/addrating',addRating)
 router.delete('/delete',userAuth,deleteuserAccount);
 router.post ('/validatecoupons',validateCoupon)
 router.post('/applycoupon',applyCoupon);
 router.put('/editProfile',userAuth, editProfile);
-
 router.post('/forgot-password',userforgotpassword)
 router.post('/verify-forgot-password-otp',otpverifypassword)
 router.post('/reset-password',passwordreset)

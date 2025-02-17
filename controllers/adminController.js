@@ -9,6 +9,7 @@ import { sendOTP } from "../utils/otpMail.js";
 import { USER } from "../models/userModel.js";
 import { DELIVERY } from "../models/deliverBoyModels.js";
 import { RESTAURANT } from "../models/restaurantModel.js";
+import {ADDRESS} from '../models/addressModel.js'
 import { ORDER } from "../models/orderModel.js";
 
 export const adminSignup= async (req,res,next)=>{
@@ -104,7 +105,7 @@ export const getadmin =async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-    res.json(user);
+    res.json({data:user,success:true});
   } catch (error) {
     res.status(500).json({ message: "Server error" });
   }
@@ -321,7 +322,11 @@ export const deleteAccount=async (req,res)=>{
 }
 export const fetchAllRestaurants = async (req, res) => {
   try {
+    console.log("entered fetch all users in res admin");
+    
     const restaurants = await RESTAURANT.find({}, { password: 0 }); 
+    console.log(restaurants);
+    
     res.status(200).json({ success: true, data: restaurants });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Error fetching restaurants', error: err.message });
@@ -335,18 +340,88 @@ export const fetchAllDeliveryPartners = async (req, res) => {
     res.status(500).json({ success: false, message: 'Error fetching delivery partners', error: err.message });
   }
 };
+
 export const fetchAllOrders = async (req, res) => {
   try {
+   
+    
     const orders = await ORDER.find({})
-      .populate('user_id', 'name email') // Populate user details
-      .populate('restaurant_id', 'name email') // Populate restaurant details
-      .populate('deliveryBoyId', 'name email'); // Populate delivery partner details
-    res.status(200).json({ success: true, data: orders });
+      .populate('user_id', 'name email') 
+      .populate('restaurant_id', 'name email') 
+      .populate('deliveryBoyId', 'name email'); 
+      
+   
+    
+   
+    if (!orders || orders.length === 0) {
+      return res.status(200).json({ success: true, message: 'No orders found', data: [] });
+    }
+    
+    const userIds = orders
+      .filter(order => order.user_id && order.user_id._id)
+      .map(order => order.user_id._id);
+      
+    console.log(`Extracted ${userIds.length} user IDs`);
+    
+    if (!userIds || userIds.length === 0) {
+      
+      return res.status(200).json({ 
+        success: true, 
+        message: 'Orders found but no valid user IDs for address lookup', 
+        data: orders 
+      });
+    }
+    
+    try {
+      const addresses = await ADDRESS.find({ user_id: { $in: userIds } });
+   
+      
+      const addressMap = addresses.reduce((map, address) => {
+       
+        const userId = address.user_id.toString();
+        if (!map[userId]) {
+          map[userId] = [];
+        }
+        map[userId].push(address);
+        return map;
+      }, {});
+      
+      
+      
+      const ordersWithAddresses = orders.map(order => {
+        let userId = null;
+        
+        if (order.user_id && order.user_id._id) {
+          userId = order.user_id._id.toString();
+        } else if (order.user_id) {
+          userId = order.user_id.toString();
+        }
+        
+        const userAddresses = userId ? (addressMap[userId] || []) : [];
+        
+        return {
+          ...order.toObject(),
+          user_addresses: userAddresses
+        };
+      });
+      
+      
+      return res.status(200).json({ success: true, data: ordersWithAddresses });
+    } catch (addressError) {
+      console.error("Error fetching addresses:", addressError);
+     
+      return res.status(200).json({ 
+        success: true, 
+        message: 'Orders found but error fetching addresses',
+        error: addressError.message,
+        data: orders 
+      });
+    }
   } catch (err) {
-    res.status(500).json({ success: false, message: 'Error fetching orders', error: err.message });
+    console.error("Error in fetchAllOrders:", err);
+    return res.status(500).json({ success: false, message: 'Error fetching orders', error: err.message });
   }
 };
-
 
 export const coupons=async(req,res)=>{
   try {
