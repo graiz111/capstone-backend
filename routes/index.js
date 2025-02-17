@@ -9,7 +9,7 @@ import { restaurantRouter } from './restaurantRoutes.js';
 import { deliveryBoyRoutes } from './deliveryBoyRoutes.js';
 import { itemsRoutes } from './itemsRoutes.js';
 import {UsersEditRoutes} from './UsersEditRoutes.js'
-import { verifyToken } from '../middlewares/VerifyToken.js';
+import { verifyToken } from '../middlewares/verifyToken.js';
 import { logoutuseredit } from '../controllers/UserEditDetails.js';
 import { cartRoutes } from './cartRoutes.js';
 import { createCheckoutSession, sessionrest} from '../controllers/paymentController.js';
