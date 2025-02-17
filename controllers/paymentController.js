@@ -40,8 +40,8 @@ export const createCheckoutSession = async (req, res) => {
             payment_method_types: ["card"],
             line_items: lineItems,
             mode: "payment",
-            success_url: `http://localhost:5173/user/${userId}/user/payment/success?session_id={CHECKOUT_SESSION_ID}`,
-            cancel_url: `http://localhost:5173/user/payment/cancel`,
+            success_url: `https://entri-main-project-frontend.vercel.app/user/${userId}/user/payment/success?session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url: `https://entri-main-project-frontend.vercel.app/user/payment/cancel`,
           
         });
   
