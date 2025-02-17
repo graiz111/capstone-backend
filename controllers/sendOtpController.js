@@ -2,7 +2,7 @@
 import { OTP } from "../models/otpModel.js";
 import { generateToken } from "../utils/token.js";
 import { createCookie } from "../utils/cookie.js";
-import bcrypt from 'bcrypt'
+import bcrypt from 'bcryptjs'
 import { USER } from "../models/userModel.js";
 import { RESTAURANT} from "../models/restaurantModel.js";
 import { DELIVERY } from "../models/deliverBoyModels.js";

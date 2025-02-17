@@ -1,8 +1,6 @@
-// cartController.js
 import { CART } from '../models/cartModel.js';
 import { ITEMS } from '../models/itemsModel.js';
 
-// Add item to cart
 export const addItemToCart = async (req, res) => {
   console.log("aditm cart");
   
@@ -91,12 +89,10 @@ export const addItemToCart = async (req, res) => {
   }
 };
 
-// Get user's cart
 export const getUserCart = async (req, res) => {
   try {
     const { userId } = req.params;
     
-    // Find cart and populate related data
     const cart = await CART.findOne({ user: userId })
       .populate('items.item')
       .populate('restaurant_id');
@@ -116,7 +112,6 @@ export const getUserCart = async (req, res) => {
   }
 };
 
-// Update item quantity
 export const updateCartItem = async (req, res) => {
   try {
     const { itemId } = req.params;  // Fixed variable name
@@ -178,7 +173,6 @@ export const updateCartItem = async (req, res) => {
 };
 
 
-// Remove item from cart
 export const removeCartItem = async (req, res) => {
   try {
     const { cartItemId } = req.params;
@@ -192,15 +186,12 @@ export const removeCartItem = async (req, res) => {
       });
     }
 
-    // Remove item
     cart.items = cart.items.filter(item => item._id.toString() !== cartItemId);
 
-    // If cart is empty, remove restaurant_id
     if (cart.items.length === 0) {
       cart.restaurant_id = null;
       cart.totalPrice = 0;
     } else {
-      // Recalculate total price
       const itemsWithDetails = await Promise.all(
         cart.items.map(async (item) => {
           const itemDetails = await ITEMS.findById(item.item);
@@ -235,9 +226,8 @@ export const removeCartItem = async (req, res) => {
 };
 export const clearCart = async (req, res) => {
   try {
-    const { userId } = req.params;// Get user ID from request body
+    const { userId } = req.params;
 
-    // Find the user's cart
     const cart = await CART.findOne({ user: userId });
 
     if (!cart) {
@@ -247,12 +237,11 @@ export const clearCart = async (req, res) => {
       });
     }
 
-    // Clear all items from the cart
     cart.items = [];
-    cart.restaurant_id = null;  // Reset restaurant ID
-    cart.totalPrice = 0;        // Reset total price
+    cart.restaurant_id = null; 
+    cart.totalPrice = 0;   
 
-    await cart.save(); // Save the updated cart
+    await cart.save(); 
 
     return res.status(200).json({
       success: true,

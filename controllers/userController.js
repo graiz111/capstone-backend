@@ -1,6 +1,6 @@
 
 import { USER } from "../models/userModel.js";
-import bcrypt from 'bcrypt'
+import bcrypt from 'bcryptjs'
 import { CART } from "../models/cartModel.js";
 import { REVIEW } from "../models/reviewModel.js";
 import {ORDER} from '../models/orderModel.js'

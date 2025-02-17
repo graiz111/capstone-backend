@@ -1,4 +1,4 @@
-import bcrypt from 'bcrypt'
+import bcrypt from 'bcryptjs'
 import { RESTAURANT } from '../models/restaurantModel.js';
 import { generateToken } from '../utils/token.js';
 import { createCookie } from '../utils/cookie.js';
