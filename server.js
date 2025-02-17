@@ -15,7 +15,7 @@ const server = http.createServer(app);
 
 // **Enable CORS for HTTP Requests**
 app.use(cors({
-  origin: "http://localhost:5173",
+  origin: "https://entri-main-project-frontend.vercel.app/",
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true
 }));
