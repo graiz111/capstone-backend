@@ -7,11 +7,11 @@ const FRONTURL=process.env.FRONTEND_URL
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 export const createCheckoutSession = async (req, res) => {
-    console.log("entered pay co");
+    ("entered pay co");
   
     try {
       const { userId,  addressId, amount, items } = req.body;
-      console.log("req.bodyvbnm",req.body);
+      ("req.bodyvbnm",req.body);
       const discountedAmount = amount; 
   
       const lineItems = items.map((item) => {
@@ -34,8 +34,8 @@ export const createCheckoutSession = async (req, res) => {
       });
     
   
-      console.log("Line Items:", lineItems); // Log the line items
-      console.log("Creating Stripe session...");
+      ("Line Items:", lineItems); // Log the line items
+      ("Creating Stripe session...");
 
       try {
         const session = await stripe.checkout.sessions.create({
@@ -48,7 +48,7 @@ export const createCheckoutSession = async (req, res) => {
         });
      
   
-        console.log("Stripe Session:", session); // Log the Stripe session
+        ("Stripe Session:", session); // Log the Stripe session
   
         const newOrder = new ORDER({
           user_id: userId,

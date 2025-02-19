@@ -160,7 +160,7 @@ export const reseditProfilePic = async (req, res) => {
 };
 export const resforgotpassword = async (req, res) => {
   try {
-    console.log("Entered forgot password");
+    ("Entered forgot password");
 
     const { email } = req.body;
     if (!email) {
@@ -260,10 +260,10 @@ export const getSingleRestaurant = async (req, res) => {
 };
 export const getresresRestaurant = async (req, res) => {
   try {
-    console.log("hitted new imp");
+    ("hitted new imp");
     
     const { id} = req.restaurant; 
-    console.log(req.restaurant);
+    (req.restaurant);
     
 
     const restaurant = await RESTAURANT.findById(id).select("-password"); 
@@ -386,7 +386,7 @@ export const orders=async(req,res)=>{
 export const resReview=async(req,res)=>{
   try{
     const {latestReview,_id}=req.body
-    console.log(req.body);
+    (req.body);
     
     if(!latestReview){
       return res.status(500).json({message:"no review found"})
@@ -398,7 +398,7 @@ export const resReview=async(req,res)=>{
 
     }
     reviewedRestaurant.review=latestReview
-    console.log(reviewedRestaurant);
+    (reviewedRestaurant);
     
     reviewedRestaurant.save()
     res.status(200).json({data:reviewedRestaurant,message:"review added successfully"})

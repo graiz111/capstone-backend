@@ -51,11 +51,11 @@ export const userSignup = async (req, res, next) => {
 };
 
 export const userLogin= async(req,res,next)=>{
-  console.log('login controller');
+  ('login controller');
   
     try {
         const { email, password } = req.body;
-        console.log(req.body);
+        (req.body);
         
 
         if (!email || !password) {
@@ -151,11 +151,11 @@ export const editProfile = async (req, res, next) => {
 
 export const deleteuserAccount=async (req,res)=>{
   try{
-    console.log("hitted del");
+    ("hitted del");
     
     const {_id}=req.body
     const user = await USER.findByIdAndDelete(_id);
-    console.log(user)
+    (user)
 
     res.status(200).json({ message: "User deleted successfully.", data: user });
 
@@ -236,7 +236,7 @@ export const getAllUsers = async (req, res) => {
   };
 export const userforgotpassword = async (req, res) => {
   try {
-    console.log("Entered forgot password");
+    ("Entered forgot password");
 
     const { email } = req.body;
     if (!email) {
@@ -276,7 +276,7 @@ export const userforgotpassword = async (req, res) => {
 
 export const placeCodOrder = async (req, res) => {
   const { userId, cartId, addressId, paymentMethod } = req.body;
-  console.log("Placing COD order:", req.body);
+  ("Placing COD order:", req.body);
 
   if (paymentMethod !== 'COD') {
     return res.status(400).json({ 
@@ -332,7 +332,7 @@ export const placeCodOrder = async (req, res) => {
     });
 
     const savedOrder = await newOrder.save();
-    console.log("savedorder",savedOrder);
+    ("savedorder",savedOrder);
     
     await CART.findByIdAndUpdate(cartId, { $set: { items: [], totalPrice: 0 } });
 
@@ -367,10 +367,10 @@ export const placeCodOrder = async (req, res) => {
 
 export const getOrdersByUserId = async (req, res) => {
   try {
-    console.log("entered order fetch");
+    ("entered order fetch");
 
     const { userId } = req.params;
-    console.log(req.user, "user");
+    (req.user, "user");
 
     // Validate inputs
     if (!userId) {
@@ -396,7 +396,7 @@ export const getOrdersByUserId = async (req, res) => {
       return res.status(404).json({ message: "No orders found for this user." });
     }
 
-    console.log(orders);
+    (orders);
 
     res.status(200).json({ orders });
   } catch (error) {
@@ -428,7 +428,7 @@ export const validateCoupon = async (req, res) => {
 export const applyCoupon = async (req, res) => {
   try {
     const { orderId, couponCode } = req.body;
-    console.log(req.body);
+    (req.body);
     
 
     // 🛑 Ensure order exists before proceeding

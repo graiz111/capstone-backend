@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 
 export const adminAuth = (req, res, next) => {
   try {
-    console.log("Admin authentication middleware hit");
+    ("Admin authentication middleware hit");
 
     // Check if the token exists in cookies
     const { token } = req.cookies;
@@ -25,7 +25,7 @@ export const adminAuth = (req, res, next) => {
     }
 
     // Log the verified payload (optional)
-    console.log("Token verified:", tokenVerified);
+    ("Token verified:", tokenVerified);
 
     // Attach the Admin payload to the request object
     req.admin = tokenVerified;

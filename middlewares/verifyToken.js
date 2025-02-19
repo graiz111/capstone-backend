@@ -18,7 +18,7 @@ export const verifyToken = (req, res) => {
   }
 };
 // export const verifttokenlogin=(req, res) => {
-//   console.log('entered login token verify');
+//   ('entered login token verify');
   
 //   const token = req.cookies.token; 
 
@@ -29,11 +29,11 @@ export const verifyToken = (req, res) => {
 //   }
 
 //   try {
-//     console.log('entered two');
+//     ('entered two');
 //     const SECRET_KEY = process.env.JWT_SECRET_KEY
        
 //     const decoded = jwt.verify(token, SECRET_KEY); 
-//     console.log(decoded);
+//     (decoded);
 //     res.json({ authenticated: true, user: decoded }); 
 //   } catch (error) {
 //     res.status(401).json({ authenticated: false, message: "Invalid token" });

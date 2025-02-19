@@ -110,7 +110,7 @@ export const getadmin =async (req, res) => {
   }
 };
 export const getAllusers =async (req, res) => {
-  console.log('enteresd admin all users get');
+  ('enteresd admin all users get');
   
   
   
@@ -247,7 +247,7 @@ export const  toggleActivedelivery=async (req, res) => {
 };
 export const adminforgotpassword = async (req, res) => {
   try {
-    console.log("Entered forgot password");
+    ("Entered forgot password");
 
     const { email } = req.body;
     if (!email) {
@@ -321,10 +321,10 @@ export const deleteAccount=async (req,res)=>{
 }
 export const fetchAllRestaurants = async (req, res) => {
   try {
-    console.log("entered fetch all users in res admin");
+    ("entered fetch all users in res admin");
     
     const restaurants = await RESTAURANT.find({}, { password: 0 }); 
-    console.log(restaurants);
+    (restaurants);
     
     res.status(200).json({ success: true, data: restaurants });
   } catch (err) {
@@ -360,7 +360,7 @@ export const fetchAllOrders = async (req, res) => {
       .filter(order => order.user_id && order.user_id._id)
       .map(order => order.user_id._id);
       
-    console.log(`Extracted ${userIds.length} user IDs`);
+    (`Extracted ${userIds.length} user IDs`);
     
     if (!userIds || userIds.length === 0) {
       

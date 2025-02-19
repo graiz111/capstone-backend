@@ -61,7 +61,7 @@ export const getUserOrders = async (req, res) => {
 export const getRestaurantOrders = async (req, res) => {
   try {
     const { restaurantId } = req.params;
-    console.log("enteredgetallordere",req.params);
+    ("enteredgetallordere",req.params);
     
 
     // Validate restaurantId
@@ -91,7 +91,7 @@ export const getRestaurantOrders = async (req, res) => {
 
 // export const getDeliveryassign = async (req, res) => {
 //   try {
-//     console.log("Entered delivery assign function");
+//     ("Entered delivery assign function");
 
 //     const { orderId } = req.body;
 
@@ -100,7 +100,7 @@ export const getRestaurantOrders = async (req, res) => {
 //       return res.status(400).json({ success: false, message: "Order ID is required." });
 //     }
 
-//     console.log("Request body:", req.body);
+//     ("Request body:", req.body);
 
 //     // Fetch all active delivery boys
 //     const deliveryBoys = await DELIVERY.find({ isActive: true });
@@ -113,7 +113,7 @@ export const getRestaurantOrders = async (req, res) => {
 //     const randomIndex = Math.floor(Math.random() * deliveryBoys.length);
 //     const selectedDeliveryBoy = deliveryBoys[randomIndex];
 
-//     console.log("Selected delivery boy:", selectedDeliveryBoy);
+//     ("Selected delivery boy:", selectedDeliveryBoy);
 
 //     // Fetch the order
 //     const order = await ORDER.findById(orderId);
@@ -136,7 +136,7 @@ export const getRestaurantOrders = async (req, res) => {
 //     order.deliveryBoyId = selectedDeliveryBoy._id;
 //     await order.save();
 
-//     console.log("Order assigned successfully:", order);
+//     ("Order assigned successfully:", order);
 
 //     res.status(200).json({
 //       success: true,
@@ -161,7 +161,7 @@ export const getDeliveryassign = async (req, res) => {
   session.startTransaction();
 
   try {
-    console.log("Entered delivery assign function");
+    ("Entered delivery assign function");
 
     const { orderId } = req.body;
 
@@ -170,7 +170,7 @@ export const getDeliveryassign = async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid Order ID." });
     }
 
-    console.log("Request body:", req.body);
+    ("Request body:", req.body);
 
     // Fetch all active delivery boys
     // const deliveryBoys = await DELIVERY.find({ isDelivery: true }).session(session);
@@ -186,7 +186,7 @@ export const getDeliveryassign = async (req, res) => {
     const randomIndex = Math.floor(Math.random() * deliveryBoys.length);
     const selectedDeliveryBoy = deliveryBoys[randomIndex];
 
-    console.log("Selected delivery boy:", selectedDeliveryBoy);
+    ("Selected delivery boy:", selectedDeliveryBoy);
 
     // Fetch the order
     const order = await ORDER.findById(orderId).session(session);
@@ -213,7 +213,7 @@ export const getDeliveryassign = async (req, res) => {
     await session.commitTransaction();
     session.endSession();
 
-    console.log("Order assigned successfully:", order);
+    ("Order assigned successfully:", order);
 
     res.status(200).json({
       success: true,
@@ -237,7 +237,7 @@ export const getDeliveryassign = async (req, res) => {
 };
 export const getOrdersByDeliveryBoyId = async (req, res) => {
   try {
-    console.log("Entered getOrdersByDeliveryBoyId function");
+    ("Entered getOrdersByDeliveryBoyId function");
 
     const { delivery_id } = req.query; // Assuming delivery_id is passed as a query parameter
 
@@ -246,7 +246,7 @@ export const getOrdersByDeliveryBoyId = async (req, res) => {
       return res.status(400).json({ success: false, message: "Delivery boy ID is required." });
     }
 
-    console.log("Fetching orders for delivery boy ID:", delivery_id);
+    ("Fetching orders for delivery boy ID:", delivery_id);
 
     // Fetch orders assigned to the delivery boy and populate customer and restaurant details
     const orders = await ORDER.find({ deliveryBoyId: delivery_id }) // Ensure the field name matches your schema

@@ -28,7 +28,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 const getFolder = (type) => {
-  console.log("Getting folder for type:", type);
+  ("Getting folder for type:", type);
   switch (type?.toLowerCase()) {
     case "user":
       return "user-profile-pics";
@@ -43,10 +43,10 @@ const getFolder = (type) => {
   }
 };
 export const processUpload = (req, res, next) => {
-  console.log("ProcessUpload middleware started");
+  ("ProcessUpload middleware started");
 
   upload.single("file")(req, res, async (err) => {
-    console.log("File upload processing started");
+    ("File upload processing started");
 
     if (err) {
       console.error("Multer error:", err);
@@ -58,15 +58,15 @@ export const processUpload = (req, res, next) => {
 
     // If no file is uploaded, just proceed to the next middleware
     if (!req.file) {
-      console.log("No file uploaded, proceeding without image.");
+      ("No file uploaded, proceeding without image.");
       req.cloudinaryResult = null; // Ensure it’s explicitly null, not undefined
       return next();
     }
 
     try {
-      console.log("Uploading to Cloudinary");
+      ("Uploading to Cloudinary");
       const uploadType = req.body.type || "general";
-      console.log("Upload type:", uploadType);
+      ("Upload type:", uploadType);
 
       // Upload the file to Cloudinary using the file path
       const result = await cloudinary.uploader.upload(req.file.path, {
@@ -80,7 +80,7 @@ export const processUpload = (req, res, next) => {
         if (err) console.error("Error deleting temporary file:", err);
       });
 
-      console.log("Cloudinary upload successful");
+      ("Cloudinary upload successful");
       req.cloudinaryResult = result;
       next();
     } catch (error) {
@@ -103,10 +103,10 @@ export const processUpload = (req, res, next) => {
 // export const processUpload = (req, res, next) => {
   
   
-//   console.log("ProcessUpload middleware started");
+//   ("ProcessUpload middleware started");
   
 //   upload.single('file')(req, res, async (err) => {
-//     console.log("File upload processing started");
+//     ("File upload processing started");
     
 //     if (err) {
 //       console.error("Multer error:", err);
@@ -117,14 +117,14 @@ export const processUpload = (req, res, next) => {
 //     }
 
 //     if (!req.file) {
-//       console.log("No file found in request");
+//       ("No file found in request");
 //       return res.status(400).json({ message: "No file provided" });
 //     }
 
 //     try {
-//       console.log("Uploading to Cloudinary");
+//       ("Uploading to Cloudinary");
 //       const uploadType = req.body.type || 'general';
-//       console.log("Upload type:", uploadType);
+//       ("Upload type:", uploadType);
 
 //       // Upload the file to Cloudinary using the file path
 //       const result = await cloudinary.uploader.upload(req.file.path, {
@@ -138,7 +138,7 @@ export const processUpload = (req, res, next) => {
 //         if (err) console.error("Error deleting temporary file:", err);
 //       });
 
-//       console.log("Cloudinary upload successful");
+//       ("Cloudinary upload successful");
 //       req.cloudinaryResult = result;
 //       next();
 //     } catch (error) {

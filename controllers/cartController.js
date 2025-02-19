@@ -2,7 +2,7 @@ import { CART } from '../models/cartModel.js';
 import { ITEMS } from '../models/itemsModel.js';
 
 export const addItemToCart = async (req, res) => {
-  console.log("aditm cart");
+  ("aditm cart");
   
   try {
     const { user_id, restaurant_id, item_id } = req.body;
@@ -42,11 +42,11 @@ export const addItemToCart = async (req, res) => {
         });
       }
       if (!userCart.restaurant_id) {
-      console.log("entered nine");
+      ("entered nine");
 
         userCart.restaurant_id = restaurant_id;
       }
-      console.log("entered 10");
+      ("entered 10");
 
       
       userCart.totalPrice = userCart.items.reduce((total, cartItem) => {
@@ -55,7 +55,7 @@ export const addItemToCart = async (req, res) => {
 
       await userCart.save();
     } else {
-      console.log("entered 11");
+      ("entered 11");
 
    
       userCart = await CART.create({
@@ -69,7 +69,7 @@ export const addItemToCart = async (req, res) => {
       });
     }
 
-    console.log("entered t12");
+    ("entered t12");
     return res.status(200).json({
 
       success: true,
@@ -116,7 +116,7 @@ export const updateCartItem = async (req, res) => {
   try {
     const { itemId } = req.params;  // Fixed variable name
     const { userId, quantity } = req.body;
-    console.log(req.body, req.params, "in update cart");
+    (req.body, req.params, "in update cart");
 
     const cart = await CART.findOne({ user: userId });
     if (!cart) {
@@ -126,7 +126,7 @@ export const updateCartItem = async (req, res) => {
       });
     }
 
-    console.log(cart);
+    (cart);
 
     // Find item in cart
     const cartItem = cart.items.find(item => item._id.toString() === itemId);

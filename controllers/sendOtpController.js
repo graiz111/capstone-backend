@@ -12,7 +12,7 @@ import {ADMIN} from '../models/adminModel.js'
 
 export const verifyOtp = async (req, res) => {
     const { email, otp, role, name, phone, password, profilePicUrl } = req.body;
-    console.log("otpsignupverify server",req.body);
+    ("otpsignupverify server",req.body);
     
 
     if (!otp || !email || !role || !name || !phone || !password ) {
@@ -84,7 +84,7 @@ export const verifyOtp = async (req, res) => {
 
 export const otpverifypassword=async(req,res)=>{
   const { email, role, otp } = req.body;
-  console.log(req.body);
+  (req.body);
   
 
   if (!email || !role || !otp) {
@@ -93,7 +93,7 @@ export const otpverifypassword=async(req,res)=>{
 
   try {
     const otpRecord = await OTP.find({ email, role, otp });
-    console.log(otpRecord);
+    (otpRecord);
     
 
     if (!otpRecord) {
@@ -143,13 +143,13 @@ export const currentDeliveryStatus = async (req, res) => {
 
 export const passwordreset = async (req, res) => {
   try {
-    console.log("Password reset endpoint hit");
+    ("Password reset endpoint hit");
 
     const { email, password,role } = req.body; // Only one password input
    
 
-    console.log("Request body:", req.body);
-    console.log("Authenticated user:", req.user);
+    ("Request body:", req.body);
+    ("Authenticated user:", req.user);
 
     if (!email || !password) {
       return res.status(400).json({
@@ -208,7 +208,7 @@ export const passwordreset = async (req, res) => {
 
 export const verifyOtpLogin = async (req, res) => {
   const { email,otp,role,_id} = req.body; 
-  console.log("rebody in verifyotplogin",req.body);
+  ("rebody in verifyotplogin",req.body);
 
   if (!otp || !email||!_id) {
       return res.status(400).json({ message: "all fields are needed!" });
@@ -235,10 +235,10 @@ export const verifyOtpLogin = async (req, res) => {
     const UserModel = userModelMap[role];
 
     const newUser= await UserModel.findById({_id});
-    // console.log(newUser);
+    // (newUser);
     
     const token = generateToken(newUser._id, newUser.role);
-    console.log(token);
+    (token);
     
     createCookie(res, token);
 

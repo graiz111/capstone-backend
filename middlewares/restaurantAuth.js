@@ -2,11 +2,11 @@ import jwt from "jsonwebtoken";
 
 export const restaurantAuth = (req, res, next) => {
     try {
-        console.log("Restaurant authentication middleware hit");
+        ("Restaurant authentication middleware hit");
     
         // Check if the token exists in cookies
         const { token } = req.cookies;
-        console.log(token,"cookies");
+        (token,"cookies");
         
     
         if (!token) {
@@ -27,7 +27,7 @@ export const restaurantAuth = (req, res, next) => {
         }
     
         // Log the verified payload (optional)
-        console.log("Token verified:", tokenVerified);
+        ("Token verified:", tokenVerified);
     
         // Attach the user payload to the request object
         req.restaurant = tokenVerified;

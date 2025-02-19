@@ -8,7 +8,7 @@ import { RESTAURANT } from "../models/restaurantModel.js";
 import { USER } from "../models/userModel.js";
 
 export const checkRoleMiddleware = async (req, res, next) => {
-  console.log("Entered checkRoleMiddleware");
+  ("Entered checkRoleMiddleware");
 
   try {
     const { role } = req.params;
@@ -33,10 +33,10 @@ export const checkRoleMiddleware = async (req, res, next) => {
 
 
 export const UserEditDetails = async (req,res) => {
-  console.log("hitted edit details user");
+  ("hitted edit details user");
   
   try {
-    console.log(req.params,req.body);
+    (req.params,req.body);
     
     const { role, id } = req.params;
     let updateData = req.body;
@@ -73,7 +73,7 @@ export const UserEditDetails = async (req,res) => {
     if (!updatedUser) {
       return res.status(404).json({ message: "User not found" });
     }
-    console.log(updatedUser);
+    (updatedUser);
     
 
     res.status(200).json({ message: "User updated successfully", data: updatedUser,success:true });
@@ -86,10 +86,10 @@ export const UserEditDetails = async (req,res) => {
 
 
 export const getUserByRole = async (req,res) => {
-  console.log("ntered getuserfunction");
+  ("ntered getuserfunction");
   
   const {role,id}=req.params
-console.log(req.params);
+(req.params);
 
   try {
     const getModelByRole = (role) => {
@@ -127,11 +127,11 @@ console.log(req.params);
 };
 
 export const logoutuseredit = async (req, res) => {
-    console.log("Entered logout");
+    ("Entered logout");
   
     const { token } = req.cookies;
     try {
-      console.log(token);
+      (token);
       
       if (token) {
         res.clearCookie('token', {
