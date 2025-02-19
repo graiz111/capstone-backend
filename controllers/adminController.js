@@ -94,10 +94,10 @@ export const adminLogin= async(req,res,next)=>{
 
 }
 export const getadmin =async (req, res) => {
-  console.log('enteresd admin get');
+ 
   
   const {_id}=req.query
-  console.log(req.query);
+  
   
   try {
     const user = await ADMIN.findById(_id).select("-password"); // Exclude password
@@ -138,16 +138,16 @@ export const edituser= async (req, res) => {
   }
 };
 export const getAlldelivery =async (req, res) => {
-  console.log('enteresd admin all users get');
+  
   
   
   
   try {
-    const user = await DELIVERY.find().select("-password"); // Exclude password
+    const user = await DELIVERY.find().select("-password"); 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-    res.json(user);
+    res.json({data:user,success:true});
   } catch (error) {
     res.status(500).json({ message: "Server error" });
   }
@@ -189,10 +189,10 @@ export const editProfile = async (req, res, next) => {
 }
 export const admineditProfilePic = async (req, res) => {
   try {
-    console.log("adminEditProfilePic endpoint hit");
+   
 
     const { id } = req.admin; 
-    console.log("Authenticated admin:", req.admin);
+    
 
     if (!id) {
       return res.status(400).json({ message: "Admin ID is required.", success: false });
@@ -422,50 +422,125 @@ export const fetchAllOrders = async (req, res) => {
   }
 };
 
-export const coupons=async(req,res)=>{
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+export const getCoupons = async (req, res) => {
   try {
-    const { code, discount, expiresAt } = req.body;
-    if (!req.user || req.user.role !== "admin") {
-      return res.status(403).json({ message: "Access denied" });
+    const coupons = await COUPON.find().sort({ createdAt: -1 });
+    res.status(200).json(coupons);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch coupons", error: error.message });
+  }
+};
+
+export const createCoupon = async (req, res) => {
+  try {
+    const { code, discountPercentage, expiryDate } = req.body;
+
+    // Validate input
+    if (!code || !discountPercentage || !expiryDate) {
+      return res.status(400).json({ message: "All fields are required" });
     }
 
-    const existingCoupon = await COUPON.findOne({ code });
+    // Check if coupon code already exists
+    const existingCoupon = await COUPON.findOne({ code: code.toUpperCase() });
     if (existingCoupon) {
       return res.status(400).json({ message: "Coupon code already exists" });
     }
 
-    const coupon = new COUPON({
-      code,
-      discount,
-      expiresAt,
-      createdBy: req.user.id,
+    // Create new coupon
+    const newCoupon = new COUPON({
+      code: code.toUpperCase(),
+      discountPercentage,
+      expiryDate,
+      isActive: true
     });
 
-    await coupon.save();
-    res.status(201).json({ message: "Coupon created successfully", coupon });
+    await newCoupon.save();
+    res.status(201).json({ success: true, coupon: newCoupon });
   } catch (error) {
-    res.status(500).json({ message: "Error creating coupon", error });
+    res.status(500).json({ message: "Failed to create coupon", error: error.message });
   }
-}
-export const deletecoupon=async(req,res)=>{
+};
+
+
+export const validateCoupon = async (req, res) => {
   try {
-    console.log("delete coupon hit ");
-    
-    const {code}=req.body
-    if(!code){
-      res.status(400).json({message:"coupon not found"})
+    const { code, cartTotal } = req.body;
+
+    if (!code || !cartTotal) {
+      return res.status(400).json({
+        success: false,
+        message: "Coupon code and cart total are required"
+      });
     }
 
-    const coupon = await COUPON.findOne({code});
+    // Find the coupon
+    const coupon = await COUPON.findOne({
+      code: code.toUpperCase(),
+      isActive: true
+    });
+
+    // Check if coupon exists
     if (!coupon) {
-      return res.status(404).json({ message: "Coupon not found in database" });
+      return res.status(404).json({
+        success: false,
+        message: "Invalid coupon code"
+      });
     }
-    console.log(coupon);
-    
 
-    await coupon.deleteOne();
-    res.status(200).json({ message: "Coupon deleted successfully" });
+    // Check if coupon has expired
+    if (new Date() > new Date(coupon.expiryDate)) {
+      return res.status(400).json({
+        success: false,
+        message: "Coupon has expired"
+      });
+    }
+
+    // Calculate discount
+    const discountAmount = (cartTotal * coupon.discountPercentage) / 100;
+
+    return res.status(200).json({
+      success: true,
+      message: "Coupon applied successfully",
+      discountPercentage: coupon.discountPercentage,
+      discountAmount,
+      finalAmount: cartTotal - discountAmount
+    });
+
   } catch (error) {
-    
+    console.error("Coupon validation error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Error validating coupon"
+    });
   }
-}
+};
+
+export const deleteCoupon = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deletedCoupon = await COUPON.findByIdAndDelete(id);
+    
+    if (!deletedCoupon) {
+      return res.status(404).json({ message: "Coupon not found" });
+    }
+
+    res.status(200).json({ success: true, message: "Coupon deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to delete coupon", error: error.message });
+  }
+};

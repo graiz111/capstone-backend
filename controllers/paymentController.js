@@ -1,7 +1,8 @@
 import Stripe from 'stripe';
 import { ORDER } from '../models/orderModel.js';
 import dotenv from "dotenv";
-dotenv.config(); // Adjust the path to your Order model
+dotenv.config();
+const FRONTURL=process.env.FRONTEND_URL
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -9,8 +10,9 @@ export const createCheckoutSession = async (req, res) => {
     console.log("entered pay co");
   
     try {
-      const { userId, cartId, addressId, amount, items } = req.body;
-      console.log(req.body);
+      const { userId,  addressId, amount, items } = req.body;
+      console.log("req.bodyvbnm",req.body);
+      const discountedAmount = amount; 
   
       const lineItems = items.map((item) => {
         // Validate item and item.price
@@ -25,25 +27,26 @@ export const createCheckoutSession = async (req, res) => {
               name: item.item.name, // ✅ Correct property access
               images: [item.item.itemPic], // ✅ Correct property access
             },
-            unit_amount: Math.round(item.item.price * 100), // ✅ Correct property access
+            unit_amount:discountedAmount * 100, // ✅ Correct property access
           },
-          quantity: item.quantity,
+          quantity: 1,
         };
       });
+    
   
       console.log("Line Items:", lineItems); // Log the line items
       console.log("Creating Stripe session...");
-  
-      // Create Stripe checkout session
+
       try {
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ["card"],
             line_items: lineItems,
             mode: "payment",
-            success_url: `https://entri-main-project-frontend.vercel.app/user/${userId}/user/payment/success?session_id={CHECKOUT_SESSION_ID}`,
-            cancel_url: `https://entri-main-project-frontend.vercel.app/user/payment/cancel`,
+            success_url: `${FRONTURL}/user/${userId}/user/payment/success?session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url: `${FRONTURL}/user/payment/cancel`,
           
         });
+     
   
         console.log("Stripe Session:", session); // Log the Stripe session
   

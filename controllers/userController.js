@@ -7,6 +7,10 @@ import {ORDER} from '../models/orderModel.js'
 import { COUPON } from "../models/couponModel.js";
 import { OTP } from "../models/otpModel.js";
 import { sendOTP } from "../utils/otpMail.js";
+import { RESTAURANT } from "../models/restaurantModel.js"; // Assuming you have a restaurant model
+import { ITEMS } from "../models/itemsModel.js"; // Assuming you have an item model
+import mongoose from "mongoose";
+import { ADDRESS } from "../models/addressModel.js";
 
 
 
@@ -267,65 +271,100 @@ export const userforgotpassword = async (req, res) => {
 
 
 
+
+
+
 export const placeCodOrder = async (req, res) => {
+  const { userId, cartId, addressId, paymentMethod } = req.body;
+  console.log("Placing COD order:", req.body);
+
+  if (paymentMethod !== 'COD') {
+    return res.status(400).json({ 
+      success: false, 
+      message: "Invalid payment method. This endpoint is for COD orders only." 
+    });
+  }
+
   try {
-    const { user_id, cart_id, addressId } = req.body;
-
-    // Validate inputs
-    if (!user_id || !cart_id || !addressId) {
-      return res.status(400).json({ message: "Missing required fields." });
+    const user = await USER.findById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
     }
 
-    // Find the cart
-    const cart = await CART.findById(cart_id).populate('items.item');
-    if (!cart || cart.items.length === 0) {
-      return res.status(404).json({ message: "Cart not found or empty." });
+    const cart = await CART.findById(cartId).populate({ path: 'items.item', model: 'ITEMS' });
+    if (!cart || !cart.items.length) {
+      return res.status(400).json({ success: false, message: "Cart is empty or not found" });
     }
 
-    // Extract restaurant_id from the cart directly (not from items)
-    const restaurantId = cart.restaurant_id; 
+    const restaurantId = cart.items[0]?.item?.restaurant_id;
     if (!restaurantId) {
-      return res.status(400).json({ message: "Restaurant not found in cart." });
+      return res.status(400).json({ success: false, message: "Cart has no associated restaurant" });
     }
 
-    // Prepare order items with price included
-    const orderItems = cart.items.map(item => ({
-      item: item.item._id,
-      quantity: item.quantity,
-      price: item.item.price,
+    const restaurant = await RESTAURANT.findById(restaurantId);
+    if (!restaurant) {
+      return res.status(404).json({ success: false, message: "Restaurant not found" });
+    }
+
+    const address = await ADDRESS.findById(addressId);
+    if (!address || address.user_id.toString() !== userId) {
+      return res.status(403).json({ success: false, message: "Invalid address" });
+    }
+
+    const formattedAddress = `${address.address_line_1}, ${address.address_line_2 || ''}, ${address.city}, ${address.state}, ${address.postal_code}, ${address.country}`;
+    
+    const orderItems = cart.items.map(cartItem => ({
+      item_id: cartItem.item._id,
+      quantity: cartItem.quantity,
+      price: cartItem.item.price
     }));
+    
+    const totalPrice = orderItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
-    // Calculate total price
-    const totalPrice = orderItems.reduce(
-      (sum, item) => sum + item.price * item.quantity,
-      0
-    );
-
-    // Create a new order
-    const order = new ORDER({
-      user_id: user_id,
+    const newOrder = new ORDER({
+      user_id: userId,
       restaurant_id: restaurantId,
       items: orderItems,
       totalPrice,
-      address: addressId,
-      paymentMethod: 'COD',
-      status: 'Placed', // Valid enum value
+      status: "Placed",
+      address: formattedAddress,
+      paymentMethod: "COD"
     });
 
-    // Save the order
-    await order.save();
+    const savedOrder = await newOrder.save();
+    console.log("savedorder",savedOrder);
+    
+    await CART.findByIdAndUpdate(cartId, { $set: { items: [], totalPrice: 0 } });
 
-    // Clear the cart
-    cart.items = [];
-    cart.totalPrice = 0;
-    await cart.save();
-
-    res.status(200).json({ success: true, orderId: order._id });
+    return res.status(201).json({
+      success: true,
+      message: "COD order placed successfully",
+      orderId: savedOrder._id,
+      orderDetails: {
+        totalPrice: savedOrder.totalPrice,
+        items: savedOrder.items.length,
+        status: savedOrder.status,
+        paymentMethod: savedOrder.paymentMethod
+      },
+      addressDetails: {
+        fullAddress: formattedAddress,
+        addressLine1: address.address_line_1,
+        addressLine2: address.address_line_2 || "",
+        city: address.city,
+        state: address.state,
+        postalCode: address.postal_code,
+        country: address.country,
+        phone: address.phone
+      },
+      customerPhone: user.phone
+    });
   } catch (error) {
     console.error("Error placing COD order:", error);
-    res.status(500).json({ message: "Error placing COD order", error });
+    return res.status(500).json({ success: false, message: "Failed to place order", error: error.message });
   }
 };
+
+
 export const getOrdersByUserId = async (req, res) => {
   try {
     console.log("entered order fetch");

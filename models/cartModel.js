@@ -1,40 +1,79 @@
 import mongoose from 'mongoose';
 
-
 const cartSchema = new mongoose.Schema({
-  user: { 
-    type: mongoose.Schema.Types.ObjectId, 
-    ref: 'USER', 
-    required: true 
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'USER',
+    required: true
   },
-  restaurant_id: { 
-    type: mongoose.Schema.Types.ObjectId, 
-    ref: 'RESTAURANT', 
-    
+  restaurant_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'RESTAURANT',
   },
   items: [
     {
-      item: { 
-        type: mongoose.Schema.Types.ObjectId, 
-        ref: 'ITEMS', 
-        
+      item: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'ITEMS',
       },
-      quantity: { 
-        type: Number, 
-        required: true, 
-        default: 1 
+      quantity: {
+        type: Number,
+        required: true,
+        default: 1
       },
     },
   ],
-  totalPrice: { 
-    type: Number, 
-    required: true, 
-    default: 0 
+  totalPrice: {
+    type: Number,
+    required: true,
+    default: 0
   },
-  createdAt: { 
-    type: Date, 
-    default: Date.now 
+  createdAt: {
+    type: Date,
+    default: Date.now,
+    expires: 60 * 60 * 3 // 3 hours in seconds
   },
 });
 
+// Create the model
 export const CART = mongoose.model('CART', cartSchema);
+// import mongoose from 'mongoose';
+
+
+// const cartSchema = new mongoose.Schema({
+//   user: { 
+//     type: mongoose.Schema.Types.ObjectId, 
+//     ref: 'USER', 
+//     required: true 
+//   },
+//   restaurant_id: { 
+//     type: mongoose.Schema.Types.ObjectId, 
+//     ref: 'RESTAURANT', 
+    
+//   },
+//   items: [
+//     {
+//       item: { 
+//         type: mongoose.Schema.Types.ObjectId, 
+//         ref: 'ITEMS', 
+        
+//       },
+//       quantity: { 
+//         type: Number, 
+//         required: true, 
+//         default: 1 
+//       },
+//     },
+//   ],
+//   totalPrice: { 
+//     type: Number, 
+//     required: true, 
+//     default: 0 
+//   },
+//   createdAt: { 
+//     type: Date, 
+//     default: Date.now 
+//   },
+// });
+
+// export const CART = mongoose.model('CART', cartSchema);

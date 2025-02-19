@@ -18,7 +18,7 @@ const orderSchema = new mongoose.Schema({
   },
   address: { type: String, required: true },
   paymentMethod: { type: String, enum: ["COD", "Online"], required: true },
-  sessionId: { type: String, required: true },
+  sessionId: { type: String },
   deliveryBoyId: { type: mongoose.Schema.Types.ObjectId, ref: "DELIVERY" }, // Add this field
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },

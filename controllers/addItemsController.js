@@ -6,13 +6,12 @@ export const addItemToRestaurant = async (req, res) => {
   try {
     const {name, price, description} = req.body;
     const{id}=req.restaurant
-    console.log(req.body)
-    console.log(req.restaurant);
+   
     
 
    
     const restaurant = await RESTAURANT.findById(id);
-    console.log(restaurant);
+ 
     
     if (!restaurant) {
       return res.status(404).json({ message: "Restaurant not found." });
@@ -48,10 +47,10 @@ export const getItemsByRestaurant = async (req, res) => {
     console.log("Entered getAllItems of restaurant");
 
     const {_id} = req.params; 
-    console.log("Restaurant ID:", _id);
+    
 
     const items = await ITEMS.find({ restaurant_id: _id });
-    console.log("Fetched Items:", items);
+   
 
     if (!items || items.length === 0) {
       return res.status(404).json({ message: "No items found for this restaurant." });
@@ -85,7 +84,7 @@ export const getItemsall = async (req, res) => {
 };
 export const getRestaurantByItemId = async (req, res) => {
   try {
-    console.log("Entered add to cart fetchres");
+    
 
     const { itemId } = req.body; // Extract item ID from request body
 
@@ -98,7 +97,7 @@ export const getRestaurantByItemId = async (req, res) => {
 
     const restaurantId = item.restaurant_id.toString(); // Convert ObjectId to string
 
-    console.log("Restaurant ID:", restaurantId);
+  
 
     res.status(200).json({ 
       message: "Restaurant ID fetched successfully.", 
@@ -119,7 +118,7 @@ export const deleteItemFromRestaurant = async (req, res) => {
   try {
     const {item_id} = req.params;
     const {id} = req.restaurant;
-    console.log(item_id,id);
+  
     
 
     const deletedItem = await ITEMS.findOneAndDelete({

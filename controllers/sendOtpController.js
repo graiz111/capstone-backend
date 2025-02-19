@@ -112,6 +112,32 @@ export const otpverifypassword=async(req,res)=>{
   
 
 }
+export const updateDeliveryStatus = async (req, res) => {
+  try {
+    const { userId, status } = req.body;
+    const isDelivery = status === "online"; 
+
+    const updatedUser = await DELIVERY.findByIdAndUpdate(userId, { isDelivery }, { new: true });
+
+    if (!updatedUser) return res.status(404).json({ success: false, message: "User not found" });
+
+    res.json({ success: true, message: `Status updated to ${status}` });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+export const currentDeliveryStatus = async (req, res) => {
+  try {
+    const { _id } = req.query;
+    const user = await DELIVERY.findById(_id);
+
+    if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+    res.json({ success: true, isDelivery: user.isDelivery });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
 
 
 

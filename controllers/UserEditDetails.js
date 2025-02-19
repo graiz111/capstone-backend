@@ -125,29 +125,36 @@ console.log(req.params);
     return { error: "Server Error" };
   }
 };
+
 export const logoutuseredit = async (req, res) => {
-  console.log("Entered logout");
-
-  const {token} =req.cookies
-  try {
- console.log(token);
- 
-    if (token){
-
-      res.clearCookie('token', {
-        httpOnly: true, 
-        secure: process.env.NODE_ENV === 'production', 
-        sameSite: 'strict', 
-        path: '/', 
-      });
-      res.status(200).json({ message: "User logout successfully",success:true});
+    console.log("Entered logout");
+  
+    const { token } = req.cookies;
+    try {
+      console.log(token);
+      
+      if (token) {
+        res.clearCookie('token', {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'strict',
+          path: '/',
+          expires: new Date(0) // Force expire the cookie immediately
+        });
+        
+        // You might want to invalidate the token on server-side if using token blacklist
+        // await invalidateToken(token);
+        
+        res.status(200).json({ message: "User logout successfully", success: true });
+      } else {
+        res.status(200).json({ message: "No token to clear", success: true });
+      }
+      
+    } catch (error) {
+      console.error("Logout failed in server", error);
+      return res.status(500).json({ success: false, message: "Logout failed in server" });
     }
-    
-  } catch (error) {
-    console.error("Logout failed in server", error);
-    return res.json({ success: false, message: "Logout failed in server" });
-  }
-};
+  };
 
 export const userEditbyadmin = async (req, res) => {
   try {

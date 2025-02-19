@@ -173,7 +173,10 @@ export const getDeliveryassign = async (req, res) => {
     console.log("Request body:", req.body);
 
     // Fetch all active delivery boys
-    const deliveryBoys = await DELIVERY.find({ isActive: true }).session(session);
+    // const deliveryBoys = await DELIVERY.find({ isDelivery: true }).session(session);
+    const deliveryBoys = await DELIVERY.find({ 
+      $and: [{ isDelivery: true }, { isActive: true }] 
+    }).session(session);
 
     if (deliveryBoys.length === 0) {
       return res.status(404).json({ success: false, message: "No active delivery boys available." });
