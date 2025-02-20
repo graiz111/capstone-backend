@@ -41,7 +41,7 @@ export const createCheckoutSession = async (req, res) => {
             line_items: lineItems,
             mode: "payment",
             success_url: `${FRONTURL}/user/${userId}/user/payment/success?session_id={CHECKOUT_SESSION_ID}`,
-            cancel_url: `${FRONTURL}/user/payment/cancel`,
+            cancel_url: `${FRONTURL}/user/payment/cancel/${userId}`,
           
         });
      

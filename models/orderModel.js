@@ -13,7 +13,7 @@ const orderSchema = new mongoose.Schema({
   totalPrice: { type: Number, required: true },
   status: {
     type: String,
-    enum: ["Placed", "Preparing", "Out for Delivery", "Assigned to Delivery Boy", "Delivered"],
+    enum: ["Placed", "Preparing", "Out for Delivery", "Assigned to Delivery Boy", "Delivered","Canceled"],
     default: "Placed",
   },
   address: { type: String, required: true },

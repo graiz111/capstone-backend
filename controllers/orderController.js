@@ -259,7 +259,7 @@ export const getOrdersByDeliveryBoyId = async (req, res) => {
       });
 
     if (!orders || orders.length === 0) {
-      return res.status(404).json({ success: false, message: "No orders found for this delivery boy." });
+      return res.status(404).json({ success: false, message: "No orders found for you" });
     }
 
     // Get user IDs to fetch addresses
@@ -316,5 +316,48 @@ export const getOrdersByDeliveryBoyId = async (req, res) => {
   } catch (error) {
     console.error("Error fetching orders by delivery boy ID:", error);
     res.status(500).json({ success: false, message: "Error fetching orders.", error: error.message });
+  }
+};
+
+export const orderCancel= async (req, res) => {
+  const { order_id } = req.body;
+
+  try {
+    // Find the order by order_id
+    const order = await ORDER.findById(order_id);
+
+    // Check if the order exists
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+    }
+
+    // Check if the order is already canceled
+    if (order.status === "Canceled") {
+      return res.status(400).json({
+        success: false,
+        message: "Order is already canceled",
+      });
+    }
+
+    // Update the order status to "canceled"
+    order.status = "Canceled";
+    await order.save();
+
+    // Return success response
+    res.status(200).json({
+      success: true,
+      message: "Order canceled successfully",
+      data: order,
+    });
+  } catch (error) {
+    console.error("Error canceling order:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to cancel order",
+      error: error.message,
+    });
   }
 };
