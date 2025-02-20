@@ -6,6 +6,8 @@ import { ADMIN } from "../models/adminModel.js";
 import { DELIVERY } from "../models/deliverBoyModels.js";
 import { RESTAURANT } from "../models/restaurantModel.js";
 import { USER } from "../models/userModel.js";
+import dotenv from "dotenv";
+dotenv.config();
 
 export const checkRoleMiddleware = async (req, res, next) => {
 
@@ -127,34 +129,26 @@ export const getUserByRole = async (req,res) => {
 };
 
 export const logoutuseredit = async (req, res) => {
- 
-  
-    const { token } = req.cookies;
-    try {
-      (token);
-      
+  const { token } = req.cookies;
+  try {
       if (token) {
-        res.clearCookie('token', {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'strict',
-          path: '/',
-          expires: new Date(0) // Force expire the cookie immediately
-        });
-        
-        // You might want to invalidate the token on server-side if using token blacklist
-        // await invalidateToken(token);
-        
-        res.status(200).json({ message: "User logout successfully", success: true });
+          res.clearCookie('token', {
+              sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+              secure: process.env.NODE_ENV === "production",
+              httpOnly: process.env.NODE_ENV === "production",
+              path: '/',
+          });
+          
+          res.status(200).json({ message: "User logout successfully", success: true });
       } else {
-        res.status(200).json({ message: "No token to clear", success: true });
+          res.status(200).json({ message: "No token to clear", success: true });
       }
       
-    } catch (error) {
+  } catch (error) {
       console.error("Logout failed in server", error);
       return res.status(500).json({ success: false, message: "Logout failed in server" });
-    }
-  };
+  }
+};
 
 export const userEditbyadmin = async (req, res) => {
   try {

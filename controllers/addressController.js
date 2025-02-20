@@ -124,6 +124,7 @@ export const handleUserAddresses = async (req, res) => {
     
    
     if (action === 'delete') {
+   
       const addressToDelete = await ADDRESS.findById(address_id);
       
       if (!addressToDelete) {
@@ -193,6 +194,45 @@ export const handleUserAddresses = async (req, res) => {
       success: false, 
       message: 'Server error', 
       error: error.message 
+    });
+  }
+};
+
+export const deleteAddress = async (req, res) => {
+  try {
+    const { addressId } = req.body;
+ 
+    
+
+    if (!addressId) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Address ID is required" 
+      });
+    }
+    console.log("addid  2");
+
+    const deletedAddress = await ADDRESS.findByIdAndDelete(addressId);
+
+    if (!deletedAddress) {
+      return res.status(404).json({ 
+        success: false, 
+        message: "Address not found" 
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Address deleted successfully",
+      deletedAddress
+    });
+
+  } catch (error) {
+    console.error("Error deleting address:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error deleting address",
+      error: error.message
     });
   }
 };

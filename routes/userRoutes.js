@@ -5,7 +5,7 @@ import { processUpload} from '../utils/cloudinary.js';
 import { userAuth } from '../middlewares/userAuth.js';
 import {  otpverifypassword, passwordreset,  verifyOtp, verifyOtpLogin } from '../controllers/sendOtpController.js';
 
-import { handleUserAddresses } from '../controllers/addressController.js';
+import { deleteAddress, handleUserAddresses } from '../controllers/addressController.js';
 import { getCoupons } from '../controllers/adminController.js';
 
 
@@ -15,6 +15,7 @@ router.get('/user/:_id',getuser)
 router.post('/login',userLogin);
 router.post('/otploginverify',verifyOtpLogin)
 router.post('/addresses',handleUserAddresses)
+router.delete('/deladdresses',userAuth,deleteAddress)
 router.post('/order/place',userAuth,placeCodOrder)
 router.get('/orders/:userId',userAuth,getOrdersByUserId)
 router.put('/addrating',addRating)
