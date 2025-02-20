@@ -1,3 +1,6 @@
+import dotenv from "dotenv";
+dotenv.config();
+
 export const createCookie = (res, token) => {
     res.cookie('token', token, {
             sameSite: NODE_ENV === "production" ? "None" : "Lax",

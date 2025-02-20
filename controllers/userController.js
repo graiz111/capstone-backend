@@ -51,7 +51,7 @@ export const userSignup = async (req, res, next) => {
 };
 
 export const userLogin= async(req,res,next)=>{
-  ('login controller');
+
   
     try {
         const { email, password } = req.body;

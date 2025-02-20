@@ -12,7 +12,7 @@ import {ADMIN} from '../models/adminModel.js'
 
 export const verifyOtp = async (req, res) => {
     const { email, otp, role, name, phone, password, profilePicUrl } = req.body;
-    ("otpsignupverify server",req.body);
+   
     
 
     if (!otp || !email || !role || !name || !phone || !password ) {
@@ -84,7 +84,7 @@ export const verifyOtp = async (req, res) => {
 
 export const otpverifypassword=async(req,res)=>{
   const { email, role, otp } = req.body;
-  (req.body);
+  
   
 
   if (!email || !role || !otp) {
@@ -143,13 +143,12 @@ export const currentDeliveryStatus = async (req, res) => {
 
 export const passwordreset = async (req, res) => {
   try {
-    ("Password reset endpoint hit");
+
 
     const { email, password,role } = req.body; // Only one password input
    
 
-    ("Request body:", req.body);
-    ("Authenticated user:", req.user);
+  
 
     if (!email || !password) {
       return res.status(400).json({
@@ -208,7 +207,7 @@ export const passwordreset = async (req, res) => {
 
 export const verifyOtpLogin = async (req, res) => {
   const { email,otp,role,_id} = req.body; 
-  ("rebody in verifyotplogin",req.body);
+
 
   if (!otp || !email||!_id) {
       return res.status(400).json({ message: "all fields are needed!" });
