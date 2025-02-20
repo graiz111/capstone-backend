@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 
 export const userAuth = (req, res, next) => {
   try {
-    ("User authentication middleware hit");
+  
 
     // Check if the token exists in cookies
     const { token } = req.cookies;
@@ -24,8 +24,7 @@ export const userAuth = (req, res, next) => {
       });
     }
 
-    // Log the verified payload (optional)
-    ("Token verified:", tokenVerified);
+
 
     // Attach the user payload to the request object
     req.user = tokenVerified;

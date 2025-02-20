@@ -44,7 +44,7 @@ export const addItemToRestaurant = async (req, res) => {
 };
 export const getItemsByRestaurant = async (req, res) => {
   try {
-    ("Entered getAllItems of restaurant");
+
 
     const {_id} = req.params; 
     
@@ -113,7 +113,7 @@ export const getRestaurantByItemId = async (req, res) => {
 
 
 export const deleteItemFromRestaurant = async (req, res) => {
-  ('enterede delee items');
+ 
   
   try {
     const {item_id} = req.params;
@@ -138,7 +138,7 @@ export const deleteItemFromRestaurant = async (req, res) => {
 };
 
 export const updateItem = async (req, res) => {
-  ("entered update item ");
+
   
   try {
     const { item_id } = req.params;

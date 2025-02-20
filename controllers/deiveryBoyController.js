@@ -9,7 +9,7 @@ import { sendOTP } from '../utils/otpMail.js';
 
 
 export const deliveryPersonSignup= async (req,res,next)=>{
-  ("entered signup");
+  
   
     try {
       const { name, email, phone, password, role } = req.body;  
@@ -45,11 +45,11 @@ export const deliveryPersonSignup= async (req,res,next)=>{
   }
 
 export const deliveryPersonLogin= async(req,res,next)=>{
-  ("entered login ");
+  
   
     try {
                const { email, password } = req.body;
-               (req.body,"reqbodydellogin");
+               
                
        
                if (!email || !password) {
@@ -93,11 +93,11 @@ export const deliveryPersonLogin= async(req,res,next)=>{
 
 }
 export const getdeliverybooy =async (req, res) => {
-  ('enteresd delivery get');
+  
   
   const { deliveryId } = req.params; 
 
-  (req.params);
+
   
   try {
     const user = await DELIVERY.findById(deliveryId).select("-password"); // Exclude password
@@ -199,7 +199,7 @@ export const deliveryforgotpassword=async(req,res)=>{
 export const deleteDeliveryAccount=async (req,res)=>{
   try{
     const {_id}=req.body
-    (req.body);
+    
     
     const user = await DELIVERY.findByIdAndDelete(_id);
 
@@ -257,7 +257,7 @@ export const getAllDeliveryP = async (req, res) => {
 };
 export const delforgotpassword = async (req, res) => {
   try {
-    ("Entered del  forgot password");
+   
 
     const { email } = req.body;
     if (!email) {

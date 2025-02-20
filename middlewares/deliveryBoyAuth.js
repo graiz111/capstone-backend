@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 
 export const deliveryBoyAuth = (req, res, next) => {
     try {
-        ("Delivery authentication middleware hit");
+     
     
         // Check if the token exists in cookies
         const { token } = req.cookies;
@@ -23,9 +23,7 @@ export const deliveryBoyAuth = (req, res, next) => {
             success: false,
           });
         }
-    
-        // Log the verified payload (optional)
-        ("Token verified:", tokenVerified);
+
     
         // Attach the Delivery payload to the request object
         req.delivery = tokenVerified;

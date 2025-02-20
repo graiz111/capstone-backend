@@ -55,7 +55,7 @@ export const userLogin= async(req,res,next)=>{
   
     try {
         const { email, password } = req.body;
-        (req.body);
+       
         
 
         if (!email || !password) {
@@ -151,7 +151,7 @@ export const editProfile = async (req, res, next) => {
 
 export const deleteuserAccount=async (req,res)=>{
   try{
-    ("hitted del");
+    
     
     const {_id}=req.body
     const user = await USER.findByIdAndDelete(_id);
@@ -236,7 +236,7 @@ export const getAllUsers = async (req, res) => {
   };
 export const userforgotpassword = async (req, res) => {
   try {
-    ("Entered forgot password");
+    
 
     const { email } = req.body;
     if (!email) {
@@ -276,7 +276,7 @@ export const userforgotpassword = async (req, res) => {
 
 export const placeCodOrder = async (req, res) => {
   const { userId, cartId, addressId, paymentMethod } = req.body;
-  ("Placing COD order:", req.body);
+  
 
   if (paymentMethod !== 'COD') {
     return res.status(400).json({ 
@@ -332,7 +332,7 @@ export const placeCodOrder = async (req, res) => {
     });
 
     const savedOrder = await newOrder.save();
-    ("savedorder",savedOrder);
+    
     
     await CART.findByIdAndUpdate(cartId, { $set: { items: [], totalPrice: 0 } });
 
@@ -367,10 +367,10 @@ export const placeCodOrder = async (req, res) => {
 
 export const getOrdersByUserId = async (req, res) => {
   try {
-    ("entered order fetch");
+    
 
     const { userId } = req.params;
-    (req.user, "user");
+   
 
     // Validate inputs
     if (!userId) {
@@ -428,16 +428,15 @@ export const validateCoupon = async (req, res) => {
 export const applyCoupon = async (req, res) => {
   try {
     const { orderId, couponCode } = req.body;
-    (req.body);
-    
+  
 
-    // 🛑 Ensure order exists before proceeding
+    
     const order = await ORDER.findById(orderId);
     if (!order) {
       return res.status(404).json({ message: "Order not found" });
     }
 
-    // 🛑 Ensure required fields exist before applying coupon
+ 
     if (!order.user_id || !order.restaurant_id) {
       return res.status(400).json({ message: "Invalid order: Missing user_id or restaurant_id" });
     }

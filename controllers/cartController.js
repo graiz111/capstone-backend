@@ -2,7 +2,7 @@ import { CART } from '../models/cartModel.js';
 import { ITEMS } from '../models/itemsModel.js';
 
 export const addItemToCart = async (req, res) => {
-  ("aditm cart");
+  
   
   try {
     const { user_id, restaurant_id, item_id } = req.body;
@@ -42,11 +42,11 @@ export const addItemToCart = async (req, res) => {
         });
       }
       if (!userCart.restaurant_id) {
-      ("entered nine");
+   
 
         userCart.restaurant_id = restaurant_id;
       }
-      ("entered 10");
+  
 
       
       userCart.totalPrice = userCart.items.reduce((total, cartItem) => {
@@ -55,7 +55,7 @@ export const addItemToCart = async (req, res) => {
 
       await userCart.save();
     } else {
-      ("entered 11");
+      
 
    
       userCart = await CART.create({
@@ -69,7 +69,7 @@ export const addItemToCart = async (req, res) => {
       });
     }
 
-    ("entered t12");
+   
     return res.status(200).json({
 
       success: true,
@@ -116,7 +116,7 @@ export const updateCartItem = async (req, res) => {
   try {
     const { itemId } = req.params;  // Fixed variable name
     const { userId, quantity } = req.body;
-    (req.body, req.params, "in update cart");
+   
 
     const cart = await CART.findOne({ user: userId });
     if (!cart) {

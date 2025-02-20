@@ -237,7 +237,7 @@ export const verifyOtpLogin = async (req, res) => {
     // (newUser);
     
     const token = generateToken(newUser._id, newUser.role);
-    (token);
+
     
     createCookie(res, token);
 

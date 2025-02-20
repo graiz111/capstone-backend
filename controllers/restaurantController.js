@@ -160,7 +160,7 @@ export const reseditProfilePic = async (req, res) => {
 };
 export const resforgotpassword = async (req, res) => {
   try {
-    ("Entered forgot password");
+
 
     const { email } = req.body;
     if (!email) {
@@ -260,7 +260,7 @@ export const getSingleRestaurant = async (req, res) => {
 };
 export const getresresRestaurant = async (req, res) => {
   try {
-    ("hitted new imp");
+   
     
     const { id} = req.restaurant; 
     (req.restaurant);
@@ -386,7 +386,7 @@ export const orders=async(req,res)=>{
 export const resReview=async(req,res)=>{
   try{
     const {latestReview,_id}=req.body
-    (req.body);
+    
     
     if(!latestReview){
       return res.status(500).json({message:"no review found"})

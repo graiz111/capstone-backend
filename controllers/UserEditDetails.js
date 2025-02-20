@@ -8,7 +8,7 @@ import { RESTAURANT } from "../models/restaurantModel.js";
 import { USER } from "../models/userModel.js";
 
 export const checkRoleMiddleware = async (req, res, next) => {
-  ("Entered checkRoleMiddleware");
+
 
   try {
     const { role } = req.params;
@@ -33,10 +33,10 @@ export const checkRoleMiddleware = async (req, res, next) => {
 
 
 export const UserEditDetails = async (req,res) => {
-  ("hitted edit details user");
+  
   
   try {
-    (req.params,req.body);
+  
     
     const { role, id } = req.params;
     let updateData = req.body;
@@ -86,10 +86,10 @@ export const UserEditDetails = async (req,res) => {
 
 
 export const getUserByRole = async (req,res) => {
-  ("ntered getuserfunction");
+ 
   
   const {role,id}=req.params
-(req.params);
+
 
   try {
     const getModelByRole = (role) => {
@@ -127,7 +127,7 @@ export const getUserByRole = async (req,res) => {
 };
 
 export const logoutuseredit = async (req, res) => {
-    ("Entered logout");
+ 
   
     const { token } = req.cookies;
     try {

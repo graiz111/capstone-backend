@@ -43,10 +43,10 @@ const getFolder = (type) => {
   }
 };
 export const processUpload = (req, res, next) => {
-  ("ProcessUpload middleware started");
+
 
   upload.single("file")(req, res, async (err) => {
-    ("File upload processing started");
+
 
     if (err) {
       console.error("Multer error:", err);
@@ -58,15 +58,15 @@ export const processUpload = (req, res, next) => {
 
     // If no file is uploaded, just proceed to the next middleware
     if (!req.file) {
-      ("No file uploaded, proceeding without image.");
+
       req.cloudinaryResult = null; // Ensure it’s explicitly null, not undefined
       return next();
     }
 
     try {
-      ("Uploading to Cloudinary");
-      const uploadType = req.body.type || "general";
-      ("Upload type:", uploadType);
+  
+      const uploadType = req.body.role || "general";
+
 
       // Upload the file to Cloudinary using the file path
       const result = await cloudinary.uploader.upload(req.file.path, {
@@ -80,7 +80,7 @@ export const processUpload = (req, res, next) => {
         if (err) console.error("Error deleting temporary file:", err);
       });
 
-      ("Cloudinary upload successful");
+
       req.cloudinaryResult = result;
       next();
     } catch (error) {
@@ -99,61 +99,3 @@ export const processUpload = (req, res, next) => {
     }
   });
 };
-
-// export const processUpload = (req, res, next) => {
-  
-  
-//   ("ProcessUpload middleware started");
-  
-//   upload.single('file')(req, res, async (err) => {
-//     ("File upload processing started");
-    
-//     if (err) {
-//       console.error("Multer error:", err);
-//       return res.status(400).json({ 
-//         message: "File upload error", 
-//         error: err.message 
-//       });
-//     }
-
-//     if (!req.file) {
-//       ("No file found in request");
-//       return res.status(400).json({ message: "No file provided" });
-//     }
-
-//     try {
-//       ("Uploading to Cloudinary");
-//       const uploadType = req.body.type || 'general';
-//       ("Upload type:", uploadType);
-
-//       // Upload the file to Cloudinary using the file path
-//       const result = await cloudinary.uploader.upload(req.file.path, {
-//         folder: getFolder(uploadType),
-//         transformation: [{ width: 500, height: 500, crop: "limit" }],
-//         resource_type: 'auto'
-//       });
-
-//       // Delete the temporary file
-//       fs.unlink(req.file.path, (err) => {
-//         if (err) console.error("Error deleting temporary file:", err);
-//       });
-
-//       ("Cloudinary upload successful");
-//       req.cloudinaryResult = result;
-//       next();
-//     } catch (error) {
-//       // Delete the temporary file in case of error
-//       if (req.file.path) {
-//         fs.unlink(req.file.path, (err) => {
-//           if (err) console.error("Error deleting temporary file:", err);
-//         });
-//       }
-      
-//       console.error("Cloudinary upload error:", error);
-//       return res.status(500).json({ 
-//         message: "Error uploading to Cloudinary",
-//         error: error.message 
-//       });
-//     }
-//   });
-// };
