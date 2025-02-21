@@ -2,11 +2,13 @@ import jwt from "jsonwebtoken";
 
 export const restaurantAuth = (req, res, next) => {
     try {
+      // console.log("entereed res auth");
+      
     
     
         // Check if the token exists in cookies
         const { token } = req.cookies;
-        (token,"cookies");
+        // (token,"cookies");
         
     
         if (!token) {

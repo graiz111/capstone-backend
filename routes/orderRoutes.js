@@ -9,7 +9,7 @@ const router = express.Router();
 router.post("/create", userAuth, createOrder);
 router.put("/update-status/:orderId", userAuth, updateOrderStatus);
 router.get("/user-orders/:userId", userAuth, getUserOrders);
-router.get("/restaurant-orders/:restaurantId", userAuth, getRestaurantOrders);
+router.get("/restaurant-orders", restaurantAuth, getRestaurantOrders);
 router.get("/delivery-orders", deliveryBoyAuth,getOrdersByDeliveryBoyId);
 router.put("/assign-delivery", restaurantAuth, getDeliveryassign);
 router.put("/cancel",orderCancel);

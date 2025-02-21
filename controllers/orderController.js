@@ -60,25 +60,28 @@ export const getUserOrders = async (req, res) => {
 
 export const getRestaurantOrders = async (req, res) => {
   try {
-    const { restaurantId } = req.params;
+
+    
+    const { id } = req.restaurant;
 
     
 
    
-    if (!mongoose.Types.ObjectId.isValid(restaurantId)) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ success: false, message: "Invalid restaurant ID." });
     }
 
   
-    const orders = await ORDER.find({ restaurant_id: restaurantId })
+    const orders = await ORDER.find({ restaurant_id: id })
       .populate("user_id", "name email") // Populate user details
       .populate("items.item_id", "name price") // Populate item details
       .lean(); // Convert Mongoose documents to plain JavaScript objects
 
     // Check if orders exist
     if (!orders || orders.length === 0) {
-      return res.status(404).json({ success: false, message: "No orders found for this restaurant." });
+      return res.status(404).json({ success: false, message: "No orders found for this restaurant now." });
     }
+
 
     // Return the orders
     res.status(200).json({ success: true, message: "Orders fetched successfully.", data: orders });
@@ -172,8 +175,6 @@ export const getDeliveryassign = async (req, res) => {
 
 
 
-    // Fetch all active delivery boys
-    // const deliveryBoys = await DELIVERY.find({ isDelivery: true }).session(session);
     const deliveryBoys = await DELIVERY.find({ 
       $and: [{ isDelivery: true }, { isActive: true }] 
     }).session(session);
@@ -182,7 +183,7 @@ export const getDeliveryassign = async (req, res) => {
       return res.status(404).json({ success: false, message: "No active delivery boys available." });
     }
 
-    // Randomly select a delivery boy
+    
     const randomIndex = Math.floor(Math.random() * deliveryBoys.length);
     const selectedDeliveryBoy = deliveryBoys[randomIndex];
 
@@ -204,8 +205,8 @@ export const getDeliveryassign = async (req, res) => {
     selectedDeliveryBoy.orders.push(orderId);
     await selectedDeliveryBoy.save({ session });
 
-    // Update the order status to "Out for Delivery" and assign the delivery boy
-    order.status = "Out for Delivery"; // Update status to "Out for Delivery"
+    
+    order.status = "Out for Delivery"; 
     order.deliveryBoyId = selectedDeliveryBoy._id;
     await order.save({ session });
 
