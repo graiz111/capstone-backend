@@ -29,19 +29,14 @@ router.get('/deliveryfetch',fetchAllDeliveryPartners)
 router.get('/ordersfetch',fetchAllOrders)
 router.get('/coupons',adminAuth,getCoupons)
 router.post('/addcoupons',adminAuth,createCoupon)
-router.post('/couponsvalidate',adminAuth,validateCoupon)
+router.post('/couponsvalidate',validateCoupon)
 router.delete('/deletecoupons/:id',adminAuth,deleteCoupon)
 
 
 router.post('/add-user', addUser);
-
 router.put('/edit-user', editUser);
-
 router.delete('/delete-user', deleteUser);
-
 router.put('/toggle-user-status', toggleUserStatus);
-
-
 router.post('/logout',adminAuth,logOut)
 router.delete('/adminDelete',adminAuth,deleteAccount)
 

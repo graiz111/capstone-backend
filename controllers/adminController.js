@@ -1,3 +1,5 @@
+import mongoose from "mongoose";
+
 import { ADMIN } from "../models/adminModel.js";
 
 import bcrypt from 'bcryptjs'
@@ -10,6 +12,7 @@ import { DELIVERY } from "../models/deliverBoyModels.js";
 import { RESTAURANT } from "../models/restaurantModel.js";
 import {ADDRESS} from '../models/addressModel.js'
 import { ORDER } from "../models/orderModel.js";
+import { COUPON_USAGE } from "../models/couponUsage.js";
 
 export const adminSignup= async (req,res,next)=>{
     try {
@@ -254,23 +257,23 @@ export const adminforgotpassword = async (req, res) => {
       return res.status(400).json({ message: 'Email is mandatory' });
     }
 
-    // Find restaurant user
+
     const user = await ADMIN.findOne({ email });
     if (!user) {
       return res.status(404).json({ message: 'Admin not found' });
     }
 
-    // Generate OTP
+
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     
-    // Extract role from user
+ 
     const role = user.role;
 
-    // Save OTP record
+   
     const otpRecord = new OTP({ email, otp, role });
     await otpRecord.save();
 
-    // Send OTP via email
+
     await sendOTP(email, otp, role);
 
     return res.status(200).json({ message: 'OTP sent successfully' ,success:true});
@@ -424,19 +427,6 @@ export const fetchAllOrders = async (req, res) => {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 export const getCoupons = async (req, res) => {
   try {
     const coupons = await COUPON.find().sort({ createdAt: -1 });
@@ -477,38 +467,69 @@ export const createCoupon = async (req, res) => {
 };
 
 
-export const validateCoupon = async (req, res) => {
-  try {
-    const { code, cartTotal } = req.body;
 
-    if (!code || !cartTotal) {
+export const validateCoupon = async (req, res) => {
+
+
+  try {
+    const { code, cartTotal, userId } = req.body;
+
+    // Validate required fields
+    if (!code || !cartTotal || !userId) {
       return res.status(400).json({
         success: false,
-        message: "Coupon code and cart total are required"
+        message: "All fields (code, cartTotal, userId) are required",
       });
     }
+
+    // Convert code to uppercase for consistency
+    const couponCode = code.toUpperCase();
 
     // Find the coupon
     const coupon = await COUPON.findOne({
-      code: code.toUpperCase(),
-      isActive: true
+      code: couponCode,
+      isActive: true,
     });
 
-    // Check if coupon exists
+   
+
     if (!coupon) {
       return res.status(404).json({
         success: false,
-        message: "Invalid coupon code"
+        message: "Invalid coupon code",
       });
     }
 
-    // Check if coupon has expired
+    // Check if the coupon is expired
     if (new Date() > new Date(coupon.expiryDate)) {
       return res.status(400).json({
         success: false,
-        message: "Coupon has expired"
+        message: "Coupon has expired",
       });
     }
+
+    // Convert userId to ObjectId
+    const userIdObject = new mongoose.Types.ObjectId(userId);
+
+    // Check if the user has already used this coupon
+    const existingUsage = await COUPON_USAGE.findOne({
+      userId: userIdObject,
+    });
+
+    
+
+    if (existingUsage) {
+      return res.status(400).json({
+        success: false,
+        message: "You have already applied a coupon for this order",
+      });
+    }
+
+    // Store the coupon usage (only one per user)
+    await COUPON_USAGE.create({
+      userId: userIdObject,
+      couponCode: couponCode,
+    });
 
     // Calculate discount
     const discountAmount = (cartTotal * coupon.discountPercentage) / 100;
@@ -516,19 +537,75 @@ export const validateCoupon = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "Coupon applied successfully",
+      couponId: coupon._id,
       discountPercentage: coupon.discountPercentage,
       discountAmount,
-      finalAmount: cartTotal - discountAmount
+      finalAmount: cartTotal - discountAmount,
     });
 
   } catch (error) {
     console.error("Coupon validation error:", error);
     return res.status(500).json({
       success: false,
-      message: "Error validating coupon"
+      message: "Error validating coupon",
+      error: error.message,
     });
   }
 };
+
+
+// export const validateCoupon = async (req, res) => {
+//   try {
+//     const { code, cartTotal } = req.body;
+
+//     if (!code || !cartTotal) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "Coupon code and cart total are required"
+//       });
+//     }
+
+//     // Find the coupon
+//     const coupon = await COUPON.findOne({
+//       code: code.toUpperCase(),
+//       isActive: true
+//     });
+
+//     // Check if coupon exists
+//     if (!coupon) {
+//       return res.status(404).json({
+//         success: false,
+//         message: "Invalid coupon code"
+//       });
+//     }
+
+//     // Check if coupon has expired
+//     if (new Date() > new Date(coupon.expiryDate)) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "Coupon has expired"
+//       });
+//     }
+
+//     // Calculate discount
+//     const discountAmount = (cartTotal * coupon.discountPercentage) / 100;
+
+//     return res.status(200).json({
+//       success: true,
+//       message: "Coupon applied successfully",
+//       discountPercentage: coupon.discountPercentage,
+//       discountAmount,
+//       finalAmount: cartTotal - discountAmount
+//     });
+
+//   } catch (error) {
+//     console.error("Coupon validation error:", error);
+//     return res.status(500).json({
+//       success: false,
+//       message: "Error validating coupon"
+//     });
+//   }
+// };
 
 export const deleteCoupon = async (req, res) => {
   try {

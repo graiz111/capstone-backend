@@ -11,6 +11,7 @@ import { RESTAURANT } from "../models/restaurantModel.js"; // Assuming you have 
 import { ITEMS } from "../models/itemsModel.js"; // Assuming you have an item model
 import mongoose from "mongoose";
 import { ADDRESS } from "../models/addressModel.js";
+import { COUPON_USAGE } from "../models/couponUsage.js";
 
 
 
@@ -424,42 +425,109 @@ export const validateCoupon = async (req, res) => {
 };
 
 
+// export const applyCoupon = async (req, res) => {
+//   try {
+//     const { orderId, couponCode, userId } = req.body;
+  
+//     const order = await ORDER.findById(orderId);
+//     if (!order) {
+//       return res.status(404).json({ message: "Order not found" });
+//     }
 
-export const applyCoupon = async (req, res) => {
-  try {
-    const { orderId, couponCode } = req.body;
+//     if (!order.user_id || !order.restaurant_id) {
+//       return res.status(400).json({ message: "Invalid order: Missing user_id or restaurant_id" });
+//     }
+
+   
+//     const coupon = await COUPON.findOne({ 
+//       code: couponCode.toUpperCase(), 
+//       isActive: true,
+//       expiryDate: { $gt: new Date() }
+//     });
+    
+//     if (!coupon) {
+//       return res.status(400).json({ message: "Invalid or expired coupon" });
+//     }
+
+   
+//     const existingUsage = await COUPON_USAGE.findOne({
+//       userId: order.user_id,
+//       couponId: coupon._id
+//     });
+
+//     if (existingUsage) {
+//       return res.status(400).json({ message: "You have already used this coupon" });
+//     }
+
+   
+//     const discountAmount = (order.totalPrice * coupon.discountPercentage) / 100;
+//     const newTotal = Math.max(order.totalPrice - discountAmount, 0);
+
+    
+//     order.totalPrice = newTotal;
+//     order.coupon = coupon._id;
+//     await order.save();
+
+   
+//     await COUPON_USAGE.create({
+//       userId: order.user_id,
+//       couponId: coupon._id
+//     });
+
+//     res.status(200).json({ 
+//       message: "Coupon applied successfully", 
+//       newTotal,
+//       discountAmount,
+//       discountPercentage: coupon.discountPercentage
+//     });
+//   } catch (error) {
+//     console.error("Error applying coupon:", error);
+    
+   
+//     if (error.code === 11000) {
+//       return res.status(400).json({ message: "You have already used this coupon" });
+//     }
+    
+//     res.status(500).json({ message: "Error applying coupon", error: error.message });
+//   }
+// };
+
+
+// export const applyCoupon = async (req, res) => {
+//   try {
+//     const { orderId, couponCode } = req.body;
   
 
     
-    const order = await ORDER.findById(orderId);
-    if (!order) {
-      return res.status(404).json({ message: "Order not found" });
-    }
+//     const order = await ORDER.findById(orderId);
+//     if (!order) {
+//       return res.status(404).json({ message: "Order not found" });
+//     }
 
  
-    if (!order.user_id || !order.restaurant_id) {
-      return res.status(400).json({ message: "Invalid order: Missing user_id or restaurant_id" });
-    }
+//     if (!order.user_id || !order.restaurant_id) {
+//       return res.status(400).json({ message: "Invalid order: Missing user_id or restaurant_id" });
+//     }
 
-    const coupon = await COUPON.findOne({ code: couponCode, isActive: true });
-    if (!coupon) return res.status(400).json({ message: "Invalid or expired coupon" });
+//     const coupon = await COUPON.findOne({ code: couponCode, isActive: true });
+//     if (!coupon) return res.status(400).json({ message: "Invalid or expired coupon" });
 
-    if (new Date() > new Date(coupon.expiresAt)) {
-      return res.status(400).json({ message: "Coupon has expired" });
-    }
+//     if (new Date() > new Date(coupon.expiresAt)) {
+//       return res.status(400).json({ message: "Coupon has expired" });
+//     }
 
-    const discountAmount = (order.totalPrice * coupon.discount) / 100;
-    const newTotal = Math.max(order.totalPrice - discountAmount, 0);
+//     const discountAmount = (order.totalPrice * coupon.discount) / 100;
+//     const newTotal = Math.max(order.totalPrice - discountAmount, 0);
 
-    order.totalPrice = newTotal;
-    order.coupon = coupon._id;
-    await order.save();
+//     order.totalPrice = newTotal;
+//     order.coupon = coupon._id;
+//     await order.save();
 
-    res.status(200).json({ message: "Coupon applied successfully", newTotal });
-  } catch (error) {
-    res.status(500).json({ message: "Error applying coupon", error });
-  }
-};
+//     res.status(200).json({ message: "Coupon applied successfully", newTotal });
+//   } catch (error) {
+//     res.status(500).json({ message: "Error applying coupon", error });
+//   }
+// };
 
 export const coddelivery=async(req,res)=>{
   try {

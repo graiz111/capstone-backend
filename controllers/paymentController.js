@@ -7,76 +7,6 @@ const FRONTURL=process.env.FRONTEND_URL
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-// export const createCheckoutSession = async (req, res) => {
- 
-  
-//     try {
-//       const { userId,  addressId, amount, items } = req.body;
-
-//       const discountedAmount = amount; 
-  
-//       const lineItems = items.map((item) => {
-//         // Validate item and item.price
-//         if (!item?.item || typeof item.item.price !== "number") {
-//           throw new Error(`Invalid price for item: ${item.item?._id}`);
-//         }
-  
-//         return {
-//           price_data: {
-//             currency: "inr",
-//             product_data: {
-//               name: item.item.name, // ✅ Correct property access
-//               images: [item.item.itemPic], // ✅ Correct property access
-//             },
-//             unit_amount:discountedAmount * 100, // ✅ Correct property access
-//           },
-//           quantity: 1,
-//         };
-//       });
-    
- 
-
-//       try {
-//         const session = await stripe.checkout.sessions.create({
-//             payment_method_types: ["card"],
-//             line_items: lineItems,
-//             mode: "payment",
-//             success_url: `${FRONTURL}/user/${userId}/user/payment/success?session_id={CHECKOUT_SESSION_ID}`,
-//             cancel_url: `${FRONTURL}/user/payment/cancel/${userId}`,
-          
-//         });
-     
-//         const address = await ADDRESS.findById(addressId).lean();
-//         const formattedAddress = `${address.address_line_1}${address.address_line_2 ? `, ${address.address_line_2}` : ''}, ${address.city}, ${address.state} - ${address.postal_code}, ${address.country}, Phone: ${address.phone}`;
-
-  
-//         const newOrder = new ORDER({
-//           user_id: userId,
-//           restaurant_id: items[0]?.item?.restaurant_id, // ✅ Correct property access
-//           items: items.map((item) => ({
-//             item_id: item.item._id, // ✅ Correct property access
-//             quantity: item.quantity,
-//             price: item.item.price, // ✅ Correct property access
-//           })),
-//           totalPrice: amount,
-//           status: "Placed",
-//           address: formattedAddress,
-//           paymentMethod: "Online",
-//           sessionId: session.id,
-//         });
-  
-//         await newOrder.save();
-  
-//         res.json({ success: true, sessionId: session.id });
-//       } catch (stripeError) {
-//         console.error("Stripe API Error:", stripeError);
-//         return res.status(500).json({ message: stripeError.message || "Stripe API error" });
-//       }
-//     } catch (error) {
-//       console.error("Error in createCheckoutSession:", error);
-//       return res.status(error.statusCode || 500).json({ message: error.message || "Internal server error" });
-//     }
-//   };
 
 
 export const createCheckoutSession = async (req, res) => {
@@ -95,10 +25,10 @@ export const createCheckoutSession = async (req, res) => {
         price_data: {
           currency: "inr",
           product_data: {
-            name: item.item.name, // ✅ Correct property access
-            images: [item.item.itemPic], // ✅ Correct property access
+            name: item.item.name, 
+            images: [item.item.itemPic], 
           },
-          unit_amount: discountedAmount * 100, // ✅ Correct property access
+          unit_amount: discountedAmount * 100,
         },
         quantity: 1,
       };
@@ -113,7 +43,7 @@ export const createCheckoutSession = async (req, res) => {
         cancel_url: `${FRONTURL}/user/payment/cancel/${userId}`,
       });
 
-      // Fetch address and format it
+      
       let formattedAddress = "";
       try {
         const address = await ADDRESS.findById(addressId).lean();
@@ -130,10 +60,10 @@ export const createCheckoutSession = async (req, res) => {
         throw new Error("Failed to fetch address");
       }
 
-      // Create new order
+     
       const newOrder = new ORDER({
         user_id: userId,
-        restaurant_id: items[0]?.item?.restaurant_id, // ✅ Correct property access
+        restaurant_id: items[0]?.item?.restaurant_id, 
         items: items.map((item) => ({
           item_id: item.item._id, // ✅ Correct property access
           quantity: item.quantity,
