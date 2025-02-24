@@ -475,10 +475,16 @@ export const validateCoupon = async (req, res) => {
     const { code, cartTotal, userId } = req.body;
 
     // Validate required fields
-    if (!code || !cartTotal || !userId) {
+    if (!code ) {
       return res.status(400).json({
         success: false,
-        message: "All fields (code, cartTotal, userId) are required",
+        message: "please enter a code to apply ",
+      });
+    }
+    if (!cartTotal ) {
+      return res.status(400).json({
+        success: false,
+        message: "error in applyin coupon",
       });
     }
 
