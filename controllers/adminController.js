@@ -1,9 +1,6 @@
 import mongoose from "mongoose";
-
 import { ADMIN } from "../models/adminModel.js";
-
 import bcrypt from 'bcryptjs'
-
 import { COUPON } from "../models/couponModel.js";
 import { OTP } from "../models/otpModel.js";
 import { sendOTP } from "../utils/otpMail.js";
@@ -13,6 +10,7 @@ import { RESTAURANT } from "../models/restaurantModel.js";
 import {ADDRESS} from '../models/addressModel.js'
 import { ORDER } from "../models/orderModel.js";
 import { COUPON_USAGE } from "../models/couponUsage.js";
+
 
 export const adminSignup= async (req,res,next)=>{
     try {
@@ -103,7 +101,7 @@ export const getadmin =async (req, res) => {
   
   
   try {
-    const user = await ADMIN.findById(_id).select("-password"); // Exclude password
+    const user = await ADMIN.findById(_id).select("-password"); 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -118,7 +116,7 @@ export const getAllusers =async (req, res) => {
   
   
   try {
-    const user = await USER.find().select("-password"); // Exclude password
+    const user = await USER.find().select("-password"); 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -181,7 +179,7 @@ export const editProfile = async (req, res, next) => {
       
       await adminEdit.save();
 
-      adminEdit.password = undefined;//to remove the password from data
+      adminEdit.password = undefined;
   
      
       return res.status(200).json({ message: 'Profile updated successfully', data: adminEdit });
@@ -227,22 +225,22 @@ export const admineditProfilePic = async (req, res) => {
   }
 };
 export const  toggleActivedelivery=async (req, res) => {
-  const { id } = req.params; // Get the delivery ID from the URL parameter
-  const { isActive } = req.body; // Get the new status from the request body
+  const { id } = req.params; 
+  const { isActive } = req.body; 
   
   try {
-    // Update the delivery status in the database (assuming you're using MongoDB here as an example)
+   
     const updatedDelivery = await DELIVERY.findByIdAndUpdate(
       id,
-      { isActive: isActive === 'true' }, // Convert 'true'/'false' to boolean true/false
-      { new: true } // Return the updated document
+      { isActive: isActive === 'true' }, 
+      { new: true }
     );
 
     if (!updatedDelivery) {
       return res.status(404).json({ message: 'Delivery not found' });
     }
 
-    res.status(200).json(updatedDelivery); // Send the updated delivery back in the response
+    res.status(200).json(updatedDelivery); 
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Error updating status' });
@@ -560,58 +558,6 @@ export const validateCoupon = async (req, res) => {
 };
 
 
-// export const validateCoupon = async (req, res) => {
-//   try {
-//     const { code, cartTotal } = req.body;
-
-//     if (!code || !cartTotal) {
-//       return res.status(400).json({
-//         success: false,
-//         message: "Coupon code and cart total are required"
-//       });
-//     }
-
-//     // Find the coupon
-//     const coupon = await COUPON.findOne({
-//       code: code.toUpperCase(),
-//       isActive: true
-//     });
-
-//     // Check if coupon exists
-//     if (!coupon) {
-//       return res.status(404).json({
-//         success: false,
-//         message: "Invalid coupon code"
-//       });
-//     }
-
-//     // Check if coupon has expired
-//     if (new Date() > new Date(coupon.expiryDate)) {
-//       return res.status(400).json({
-//         success: false,
-//         message: "Coupon has expired"
-//       });
-//     }
-
-//     // Calculate discount
-//     const discountAmount = (cartTotal * coupon.discountPercentage) / 100;
-
-//     return res.status(200).json({
-//       success: true,
-//       message: "Coupon applied successfully",
-//       discountPercentage: coupon.discountPercentage,
-//       discountAmount,
-//       finalAmount: cartTotal - discountAmount
-//     });
-
-//   } catch (error) {
-//     console.error("Coupon validation error:", error);
-//     return res.status(500).json({
-//       success: false,
-//       message: "Error validating coupon"
-//     });
-//   }
-// };
 
 export const deleteCoupon = async (req, res) => {
   try {
